@@ -1,3 +1,4 @@
+/*
 
 
 span.highlight {
@@ -11,4 +12,25 @@ div.title {
 
 #root {
   margin: 36px;
+}*/
+
+
+.animated-underline {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 2px; /* space for the underline */
+}
+
+.animated-underline::after {
+    content: '';
+    position: absolute;
+    width: calc(100% - 16px);
+    height: 2px; /* thickness of the underline */
+    bottom: 0; /* starting position */
+    left: 0;
+    transform: translateX(8px);
+    transition: transform .2s ease;
+}
+.animated-underline:hover::after {
+    transform: translateY(2px) translateX(8px); /* lowers the underline on hover */
 }
