@@ -1,0 +1,73 @@
+html, body, #App {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+#App {
+    padding: 12px;
+}
+
+#cursor {
+    background-color: white;
+    height: 1rem;
+    width: 0.5rem;
+    display: inline-block;
+    transform: translateY(2px);
+    animation: blink 1s infinite;
+}
+
+#term-inp {
+    background-color: blue;
+    border: none;
+    color: white;
+    font-family: "Fira Code", monospace;
+    font-size: 1rem;
+    outline: none;
+    width: min-content;
+}
+//define blinking animation
+@keyframes blink {
+    0%, 100% {
+        opacity: 0;
+        transform: translateY(2px) scale(.9);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(2px) scale(1);
+    }
+}
+
+body {
+    background-color: black;
+    color: white;
+    font-family: "Fira Code", monospace;
+}
+
+span.orange {
+    color: #f57e20;
+}
+
+.hidden {
+    display: none;
+}
+
+p#input {
+    outline: none;
+    display: inline-block;
+    margin: 0;
+}
+
+.typing::after {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 1rem;
+    background-color: white;
+    font-weight: bold; /* Match the style of the paragraph or differentiate it */
+    transform: translateY(2px);
+}
