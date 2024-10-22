@@ -59,8 +59,8 @@ jobs:
         # will obviously return error 404 not found.
         run: ./trunk build --release --public-url "${GITHUB_REPOSITORY#*/}"
 
-      - name: "Copy CNAME into /dist"
-        run: cp CNAME dist/
+      # - name: "Copy CNAME into /dist"
+      #   run: cp CNAME dist/
 
 
       # Deploy to gh-pages branch
