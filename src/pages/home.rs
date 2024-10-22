@@ -24,7 +24,7 @@ pub fn Home() -> impl IntoView {
         }
     };
 
-    let s = view!{<span>"into"</span>};
+    let s = view!{<span>"intro"</span>};
 
     view! {
         <ErrorBoundary fallback=|errors| {

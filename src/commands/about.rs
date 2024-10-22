@@ -101,6 +101,7 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>) -> &'a mut Ve
 
 pub fn intro_text() -> HtmlElement<P> {
     view! {
+        // TODO make orange name link to github
         <p>"Hi, I'm "<span class="orange">"Max Gordon"</span>" and this is my personal website. Please explore it!"</p>
     }
 }
