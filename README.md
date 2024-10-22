@@ -25,7 +25,7 @@ cargo generate --git https://github.com/leptos-community/start-csr
 to generate your new project, then
 
 ```sh
-cd mxgordon5
+cd mxgordon
 ```
 
 to go to your newly created project.

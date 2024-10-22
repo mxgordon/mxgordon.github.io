@@ -1,5 +1,5 @@
 use leptos::*;
-use mxgordon5::App;
+use mxgordon::App;
 
 fn main() {
     // set up logging
