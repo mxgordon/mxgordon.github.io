@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt::Debug};
 use std::rc::Rc;
 use std::time::Duration;
 
-use html::{p, span, div, AnyElement, Div, ToHtmlElement, P};
+use html::{a, div, p, span, AnyElement, ToHtmlElement, P};
 use leptos::*;
 
 use leptos::logging::log;
@@ -51,43 +51,53 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>) -> &'a mut Ve
     log!("{:?} {} {:?}", root, root.node_type(), root.text_content()); 
 
     let root_name = root.node_name();
+
+    if root.node_type() == 3 {
+        seq.push(TypeElement::StartText());
+
+        let text = root.text_content().unwrap();
+        for c in text.chars() {
+            seq.push(TypeElement::Character{c});
+        }
+
+        seq.push(TypeElement::EndText());
+
+        return seq;
+    }
+    
+    let root_element: Element = root.clone().dyn_into().unwrap();
+    let attrs = root_element.get_attribute_names();
+    // let attrIterator = attrs.iter();
+    let attrs: Vec<(&'static str, Attribute)> = attrs.iter().map(|attr| {
+            let name = attr.as_string().unwrap().to_owned();
+            let name_str: &'static str = Box::leak(name.into_boxed_str());
+
+            let value = root_element.get_attribute(&name_str).unwrap();
+            (name_str, Attribute::String(value.into()))
+        }).collect();
+
+    let mut next_element: Option<HtmlElement<AnyElement>> = None;
     
     match root_name.as_str() {
         "P"=>{
-            let next_element = p();
-
-            seq.push(TypeElement::Element{e: next_element.into()});
+            next_element = Some(p().into());
         }
-        
         "SPAN"=>{
-            let root_element: Element = root.clone().dyn_into().unwrap();
-            
-            let classes = root_element.get_attribute("class");
-
-            let next_element = span();
-
-            if let Some(classes) = classes {
-                next_element.clone().classes(classes);
-            }
-
-            seq.push(TypeElement::Element{e: next_element.into()});
+            next_element = Some(span().into());
         }
-        "#text"=>{
-            seq.push(TypeElement::StartText());
-
-            let text = root.text_content().unwrap();
-            for c in text.chars() {
-                seq.push(TypeElement::Character{c});
-            }
-
-            seq.push(TypeElement::EndText());
-
-            return seq;
+        "A"=>{
+            next_element = Some(a().into());
         }
         other=>{
             log!("Unknown element: {}", other);
         }
     }
+    
+    let _ = next_element.clone().expect("Element should be initialized").attrs(attrs);
+
+    seq.push(TypeElement::Element{e: next_element.expect("Element should be initialized").into()});
+
+
 
     for i in 0..root.child_nodes().length() {
         let child = root.child_nodes().get(i).unwrap();
@@ -102,7 +112,7 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>) -> &'a mut Ve
 pub fn intro_text() -> HtmlElement<P> {
     view! {
         // TODO make orange name link to github
-        <p>"Hi, I'm "<span class="orange">"Max Gordon"</span>" and this is my personal website. Please explore it!"</p>
+        <p>"Hi, I'm "<a href="https://github.com/mxgordon" rel="noreferrer noopener" target="_blank" class="orange">"Max Gordon"</a>" and this is my personal website. Please explore it!"</p>
     }
 }
 
@@ -118,18 +128,10 @@ pub fn TypeWriter(#[prop(into)] html_to_type: HtmlElement<AnyElement>, #[prop(de
         let _ = e.on_mount(move |e| {
             let idxRef = RefCell::new(0);
             let intervalHandleRef: Rc<RefCell<Option<IntervalHandle>>> = Rc::new(RefCell::new(None));
-
-            // charSeq[0].classes("typing");
-
-            // if charSeq[0] == TypeElement::Element{e: base_element.clone()} {
-            //     let _ = e.append_child(&base_element);
-            // } else {
-            //     let _ = e.append_child(&html_to_type);
-            // }
-
+            
             match &charSeq[0] {
                 TypeElement::Element{e} => {
-                    e.clone().classes("typing");
+                    let _ = e.clone().classes("typing");
                 }
                 el => {
                     log!("Unexpected element: {:?}", el);
@@ -152,7 +154,8 @@ pub fn TypeWriter(#[prop(into)] html_to_type: HtmlElement<AnyElement>, #[prop(de
                         if *idx >= charSeq.len() {
                             match &charSeq[0] {
                                 TypeElement::Element{e} => {
-                                    e.clone().remove_attribute("class");
+                                    let classes = e.clone().class_name();
+                                    let _ = e.clone().attr("class", classes.replace("typing", ""));
                                 }
                                 el => {
                                     log!("Unexpected element: {:?}", el);
@@ -199,73 +202,9 @@ pub fn TypeWriter(#[prop(into)] html_to_type: HtmlElement<AnyElement>, #[prop(de
                     }
                 }
             };
-            *intervalHandleRef.borrow_mut() = set_interval_with_handle(cb, Duration::from_millis(30)).ok();
+            *intervalHandleRef.borrow_mut() = set_interval_with_handle(cb, Duration::from_millis(10)).ok();
         });
     });
 
     base_element.node_ref(container_div_ref)
-}
-
-#[component]
-pub fn Foo() -> impl IntoView {
-    let p_ref = NodeRef::<P>::new();
-
-    let inner_text = Signal::derive(move || {
-        let mut result = String::new();
-
-        let Some(p) = p_ref.get() else {
-            return result;
-        };
-
-        let nodes = p.child_nodes();
-
-        for i in 0..nodes.length() {
-            let Some(node) = nodes.get(i) else {
-                continue;
-            };
-
-            match node.node_type() {
-                1 | 3 => {
-                    if let Some(text) = node.text_content() {
-                        result.push_str(&text);
-                    }
-                }
-                _ => {}
-            };
-        }
-
-        return result;
-    });
-
-    return view! {
-      <p node_ref=p_ref>
-        <div>"hello"</div>
-        "world"
-      </p>
-      {inner_text}
-    };
-}
-
-#[component]
-pub fn Intro() -> impl IntoView {
-    let element = create_node_ref::<P>();
-
-    // element.on_load( |e| {
-    //     e.on_mount(|e| {
-    //         // make typewriter effect
-    //     });
-    // });
-
-    let rtn: HtmlElement<P> = view! {
-        <p node_ref=element>"Hi, I'm "<span class="orange">Max Gordon</span>" and this is my personal website. Please explore it!"</p>
-    };
-
-    // typewriter(rtn)
-
-    // let cloned_rtn = rtn.clone();
-    // cloned_rtn.on_mount(|ele| {
-    //     // alternative make typewriter effect
-    // });
-
-    return rtn;
 }

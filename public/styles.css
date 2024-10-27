@@ -48,8 +48,15 @@ body {
   font-family: "Fira Code", monospace;
 }
 
-span.orange {
+.orange {
   color: #f57e20;
+}
+
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
 }
 
 .hidden {
