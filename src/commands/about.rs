@@ -39,8 +39,6 @@ fn break_down_html<'a>(
 }
 
 fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>) -> &'a mut Vec<TypeElement> {
-    log!("{:?} {} {:?}", root, root.node_type(), root.text_content());
-
     let root_name = root.node_name();
 
     if root.node_type() == 3 {
@@ -58,7 +56,7 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>) -> &'a mut Ve
 
     let root_element: Element = root.clone().dyn_into().unwrap();
     let attrs = root_element.get_attribute_names();
-    // let attrIterator = attrs.iter();
+
     let attrs: Vec<(&'static str, Attribute)> = attrs
         .iter()
         .map(|attr| {
@@ -108,8 +106,18 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>) -> &'a mut Ve
 
 pub fn intro_text() -> HtmlElement<P> {
     view! {
-        // TODO make orange name link to github
-        <p>"Hi, I'm "<a href="https://github.com/mxgordon" rel="noreferrer noopener" target="_blank" class="orange">"Max Gordon"</a>" and this is my personal website. Please explore it!"</p>
+        // <p>"Hi, I'm "<a href="https://github.com/mxgordon" rel="noreferrer noopener" target="_blank" class="orange">"Max Gordon"</a>" and this is my personal website. Please explore it!"</p>
+        <p>
+            <p class="ascii-art">"Hi, I'm..."</p>
+            <p class="orange ascii-art">" __  __               _____               _"</p>
+            <p class="orange ascii-art">"|  \\/  |             / ____|             | |"</p>
+            <p class="orange ascii-art">"| \\  / | __ ___  __ | |  __  ___  _ __ __| | ___  _ __  "</p>
+            <p class="orange ascii-art">"| |\\/| |/ _` \\ \\/ / | | |_ |/ _ \\| '__/ _` |/ _ \\| '_ \\ "</p>
+            <p class="orange ascii-art">"| |  | | (_| |>  <  | |__| | (_) | | | (_| | (_) | | | |"</p>
+            <p class="orange ascii-art">"|_|  |_|\\__,_/_/\\_\\  \\_____|\\___/|_|  \\__,_|\\___/|_| |_|"</p>
+            <p>"Instead of navigating with buttons and hyperlinks, on my page you will use terminal commands. Start with \"help\" for the list of commands and syntax!"</p>
+            <p>"Made using Rust 🦀 and Leptos!"</p>
+        </p>
     }
 }
 
@@ -118,7 +126,6 @@ pub fn TypeWriter(
     #[prop(into)] html_to_type: HtmlElement<AnyElement>,
     #[prop(default=div().into(), into)] base_element: HtmlElement<AnyElement>,
     #[prop(default=10)] delay: u64,
-    // #[prop(default=||(), into)] callback: F
     #[prop(default=Box::new(|| ()))] callback: Box<dyn Fn() + 'static>
 ) -> impl IntoView {
     let container_div_ref = create_node_ref::<AnyElement>();
@@ -132,15 +139,6 @@ pub fn TypeWriter(
             let idxRef = RefCell::new(0);
             let intervalHandleRef: Rc<RefCell<Option<IntervalHandle>>> =
                 Rc::new(RefCell::new(None));
-
-            match &charSeq[0] {
-                TypeElement::Element { e } => {
-                    let _ = e.clone().classes("typing");
-                }
-                el => {
-                    log!("Unexpected element: {:?}", el);
-                }
-            }
 
             let current_element: RefCell<HtmlElement<AnyElement>> = RefCell::new(e.into());
             let current_text: RefCell<Option<Node>> = RefCell::new(None);
@@ -156,15 +154,6 @@ pub fn TypeWriter(
 
                     while iter_again {
                         if *idx >= charSeq.len() {
-                            match &charSeq[0] {
-                                TypeElement::Element { e } => {
-                                    let classes = e.clone().class_name();
-                                    let _ = e.clone().attr("class", classes.replace("typing", ""));
-                                }
-                                el => {
-                                    log!("Unexpected element: {:?}", el);
-                                }
-                            }
 
                             intervalHandleRef.borrow_mut().unwrap().clear();
                             callback();
@@ -175,6 +164,9 @@ pub fn TypeWriter(
 
                         match next {
                             TypeElement::EndElement() => {
+                                let classes = current_element.clone().class_name();
+                                let _ = current_element.clone().attr("class", classes.replace("typing", ""));
+
                                 let parent_node = current_element.parent_element().unwrap();
                                 *current_element = ToHtmlElement::to_leptos_element(&parent_node);
                             }
@@ -192,11 +184,16 @@ pub fn TypeWriter(
                                 iter_again = false;
                             }
                             TypeElement::Element { e } => {
+                                let classes = current_element.clone().class_name();
+                                let _ = current_element.clone().attr("class", classes.replace("typing", ""));
+
                                 let _ = current_element.append_child(&e);
                                 *current_element = e.clone();
+                                
+                                let _ = current_element.clone().classes("typing");
                             }
                             TypeElement::StartText() => {
-                                let result = current_element.append_with_str_1("");
+                                let _ = current_element.append_with_str_1("");
 
                                 *current_text = Some(current_element.last_child().unwrap()); // unwrapping then Some, so it'll panic if something weird happens
                             }

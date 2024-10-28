@@ -84,3 +84,8 @@ p#input {
     font-weight: bold; /* Match the style of the paragraph or differentiate it */
     transform: translateY(2px);
 }
+
+.ascii-art {
+    white-space: pre-wrap;
+    margin: 0;
+}

@@ -29,12 +29,6 @@ pub fn Home() -> impl IntoView {
 
     let s = view!{<span>"intro"</span>};
 
-    // fn write_loading_stage_callback() {
-    //     writeLoadingStage.set(1);
-    // }
-
-    let write_loading_stage_callback= || writeLoadingStage.set(1);
-
     view! {
         <ErrorBoundary fallback=|errors| {
             view! {
@@ -57,13 +51,12 @@ pub fn Home() -> impl IntoView {
                 <TypeWriter html_to_type=s base_element=span() delay=100 callback=Box::new(move ||(writeLoadingStage.set(1))) /></p>
 
                 <Show when=move || (loadingStage.get() > 0)>
-                    <TypeWriter html_to_type=intro_text() callback=Box::new(move ||(writeLoadingStage.set(2))) />
+                    <TypeWriter html_to_type=intro_text() delay=10 callback=Box::new(move ||(writeLoadingStage.set(2))) />
                 </Show>
 
                 <Show when=move || (loadingStage.get() > 1)>
                     <p class="prompt-line">{prompt}<p contenteditable autofocus on:input=handleChange id="input"></p></p>
                 </Show>
-                // <p>"user@mxgordon.com>"<input id="term-inp" autofocus on:change=handleChange></input><span id="cursor" /></p>
             </div>
         </ErrorBoundary>
     }
