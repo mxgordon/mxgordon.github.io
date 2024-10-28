@@ -10,6 +10,9 @@ use crate::commands::about::*;
 #[component]
 pub fn Home() -> impl IntoView {
     let (_promptInput, setPromptInput) = create_signal("".to_string());
+    let (loadingStage, writeLoadingStage) = create_signal(0);
+
+    let prompt = "user@mxgordon.com> ";
 
     let handleChange = move |e: Event| {
         // Get the target element and cast it to HtmlElement
@@ -25,6 +28,12 @@ pub fn Home() -> impl IntoView {
     };
 
     let s = view!{<span>"intro"</span>};
+
+    // fn write_loading_stage_callback() {
+    //     writeLoadingStage.set(1);
+    // }
+
+    let write_loading_stage_callback= || writeLoadingStage.set(1);
 
     view! {
         <ErrorBoundary fallback=|errors| {
@@ -43,17 +52,18 @@ pub fn Home() -> impl IntoView {
                 </ul>
             }
         }>
-
             <div id="App">
-                // <p>"Hi, I'm "<span class="orange">"Max Gordon"</span>" and this is my personal website. Please explore it!"</p>
-                <p>"user@mxgordon.com>"
-                <TypeWriter html_to_type=s base_element=span() /></p>
+                <p class="prompt-line">{prompt}
+                <TypeWriter html_to_type=s base_element=span() delay=100 callback=Box::new(move ||(writeLoadingStage.set(1))) /></p>
 
-                // <Intro2 />
-                // <Intro2 />
-                <TypeWriter html_to_type=intro_text() />
+                <Show when=move || (loadingStage.get() > 0)>
+                    <TypeWriter html_to_type=intro_text() callback=Box::new(move ||(writeLoadingStage.set(2))) />
+                </Show>
+
+                <Show when=move || (loadingStage.get() > 1)>
+                    <p class="prompt-line">{prompt}<p contenteditable autofocus on:input=handleChange id="input"></p></p>
+                </Show>
                 // <p>"user@mxgordon.com>"<input id="term-inp" autofocus on:change=handleChange></input><span id="cursor" /></p>
-                <p>"user@mxgordon.com>"<p contenteditable autofocus on:input=handleChange id="input"></p></p>
             </div>
         </ErrorBoundary>
     }
