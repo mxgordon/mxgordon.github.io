@@ -79,7 +79,7 @@ pub fn Home() -> impl IntoView {
                     // <p class="prompt-line">{prompt}<p contenteditable autofocus on:input=handleChange id="input"></p></p>
                     <p class="prompt-line" >{prompt}
                         <form on:submit=handleSubmit >
-                            <input name="thing" type="text" value=promptInput on:input=handleInput autofocus />
+                            <input name="thing" type="text" prop:value=promptInput on:input=handleInput autofocus />
                         </form>
                     </p>
                 </Show>
