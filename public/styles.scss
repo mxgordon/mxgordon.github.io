@@ -1,3 +1,5 @@
+$orange: #f57e20;
+
 html, body, #App {
     height: 100%;
     width: 100%;
@@ -49,14 +51,36 @@ body {
 }
 
 .orange {
-    color: #f57e20;
+    color: $orange;
 }
 
 a {
     text-decoration: none;
+    color: $orange;
 
     &:hover {
         text-decoration: underline;
+    }
+}
+
+p {
+    line-height: 1.3rem;
+}
+
+form {
+    display: inline;
+}
+
+input {
+    color: white;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    font: inherit;
+    padding: 0;
+
+    &#autocomplete {
+        color: grey;
     }
 }
 
@@ -79,6 +103,7 @@ p#input {
     content: "";
     display: inline-block;
     width: 0.5rem;
+    // width: 0.05rem;
     height: 1rem;
     background-color: white;
     font-weight: bold; /* Match the style of the paragraph or differentiate it */
@@ -88,4 +113,5 @@ p#input {
 .ascii-art {
     white-space: pre-wrap;
     margin: 0;
+    width: max-content;
 }

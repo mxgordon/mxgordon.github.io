@@ -54,9 +54,30 @@ body {
 
 a {
   text-decoration: none;
+  color: #f57e20;
 }
 a:hover {
   text-decoration: underline;
+}
+
+p {
+  line-height: 1.3rem;
+}
+
+form {
+  display: inline;
+}
+
+input {
+  color: white;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  font: inherit;
+  padding: 0;
+}
+input#autocomplete {
+  color: grey;
 }
 
 .hidden {
@@ -88,4 +109,6 @@ p#input {
 .ascii-art {
   white-space: pre-wrap;
   margin: 0;
+  width: -moz-max-content;
+  width: max-content;
 }
