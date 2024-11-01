@@ -14,14 +14,14 @@ pub fn intro_text() -> HtmlElement<P> {
             <p class="orange ascii-art">"| |  | | (_| |>  <  | |__| | (_) | | | (_| | (_) | | | |"</p>
             <p class="orange ascii-art">"|_|  |_|\\__,_/_/\\_\\  \\_____|\\___/|_|  \\__,_|\\___/|_| |_|"</p>
             <p>"Instead of navigating with buttons and hyperlinks, on my page you will use terminal commands. Start with \"help\" for the list of commands and syntax!"</p>
-            <p>"Made using "<a href="https://www.rust-lang.org/">"Rust"</a>" 🦀 and "<a href="https://leptos.dev/">"Leptos"</a>"!"</p>
+            <p>"Made using "<a href="https://www.rust-lang.org/" target="_blank" rel="noopener noreferrer">"Rust"</a>" 🦀 and "<a href="https://leptos.dev/" target="_blank" rel="noopener noreferrer">"Leptos"</a>"!"</p>
         </p>
     }
 }
 
 #[component]
-pub fn Intro(#[prop()] cmd: String) -> impl IntoView{
+pub fn Intro(#[prop()] cmd: String, #[prop(default=Box::new(|| ()))] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView{
     view! {
-        <TypeWriter html_to_type=intro_text() />
+        <TypeWriter html_to_type=intro_text() callback=on_finished />
     }
 }

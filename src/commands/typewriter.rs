@@ -2,7 +2,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::{cell::RefCell, fmt::Debug};
 
-use html::{AnyElement, P, ToHtmlElement, a, div, p, span};
+use html::{AnyElement, ToHtmlElement, a, div, p, span};
 use leptos::*;
 
 use leptos::logging::log;
@@ -125,7 +125,7 @@ pub fn TypeWriter(
     #[prop(default=div().into(), into)] base_element: HtmlElement<AnyElement>,
     #[prop(default=20)] delay: u64,
     #[prop(default=Box::new(|| ()))] callback: Box<dyn Fn() + 'static>,
-    #[prop(default=4)] chunk_sz: usize,
+    #[prop(default=6)] chunk_sz: usize,
 ) -> impl IntoView {
     let container_div_ref = create_node_ref::<AnyElement>();
 

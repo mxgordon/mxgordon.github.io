@@ -9,7 +9,10 @@ html, body, #App {
 }
 
 #App {
-  padding: 12px;
+  padding: 12px 12px 20% 12px;
+  min-height: 100%;
+  height: -moz-fit-content;
+  height: fit-content;
 }
 
 #cursor {
@@ -94,6 +97,9 @@ p#input {
 .prompt-line {
   width: -moz-max-content;
   width: max-content;
+}
+.prompt-line > span:first-child {
+  color: #f6d434;
 }
 
 .typing::after {
