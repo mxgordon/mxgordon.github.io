@@ -1,21 +1,13 @@
 use ev::Event;
 use ev::SubmitEvent;
 use html::span;
-use html::AnyElement;
 use html::Input;
-use html::P;
 use leptos::*;
 use leptos::logging::log;
-use wasm_bindgen::JsCast;
-use web_sys::HtmlInputElement;
 
 use crate::commands::about::*;
 use crate::commands::search::*;
 use crate::commands::typewriter::*;
-
-fn autofocus(e: Event) {
-    log!("e{:?}", e);
-}
 
 fn make_prompt() -> HtmlElement<html::Span>{
     view! {
@@ -40,7 +32,7 @@ pub fn PromptInput(
     view! {
         <p class="prompt-line" >{make_prompt()}
             <form on:submit=on_submit>
-                <input ref=prompt_ref type="text" id="prompt" prop:value=prompt_input on:input=on_input  />
+                <input ref=prompt_ref type="text" id="prompt" prop:value=prompt_input on:input=on_input spellcheck="false" autocomplete="off" aria-autocomplete="none" />
             </form>
         </p>
     }
@@ -59,17 +51,18 @@ pub fn Home() -> impl IntoView {
 
     let handleSubmit = move |e: SubmitEvent| {
         e.prevent_default();
-        let potential_commands = search_commands(promptInput.get());
 
-        if potential_commands.len() == 0 {
+        let potential_command = get_command(promptInput.get());
+
+        if let Some(command) = potential_command {
             writePastCmds.update(|past| {
                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-                past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
+                past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
             });
         } else {
             writePastCmds.update(|past| {
                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-                past.push((potential_commands[0].function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
+                past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
             });
         }
         writeLoadingStage.set(1);

@@ -1,6 +1,7 @@
 use leptos::{html::P, IntoView};
 use leptos::*;
 
+use crate::commands::about::check_cmd_args_empty;
 use crate::commands::typewriter::TypeWriter;
 
 use super::about::Intro;
@@ -29,7 +30,13 @@ pub static COMMANDS: [Command; 2] = [
 ];
 
 pub fn search_commands(cmd: String) -> Vec<Command<'static>> {
-    COMMANDS.iter().filter(|c| c.name.contains(&cmd)).cloned().collect()
+    let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
+    COMMANDS.iter().filter(|c| c.name.contains(&cmd_name)).cloned().collect()
+}
+
+pub fn get_command(cmd: String) -> Option<Command<'static>> {
+    let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
+    COMMANDS.iter().find(|c| c.name == cmd_name).cloned()
 }
 
 pub fn help_text() -> HtmlElement<P> {
@@ -42,9 +49,14 @@ pub fn help_text() -> HtmlElement<P> {
     }
 }
 
-
 #[component]
 pub fn Help(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
+    if !check_cmd_args_empty(&cmd) {
+        return view! {
+            <InvalidOption cmd=cmd on_finished=on_finished />
+        }
+    }
+    
     view! {
         <TypeWriter html_to_type=help_text() callback=on_finished/>
     }
@@ -56,5 +68,12 @@ pub fn CommandNotFound(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn
 
     view! {
         <TypeWriter html_to_type=view!{<p>{cmd_name}": command not found"</p>} callback=on_finished />
+    }
+}
+
+#[component]
+pub fn InvalidOption(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
+    view! {
+        <TypeWriter html_to_type=view!{<p>{cmd}": invalid option"</p>} callback=on_finished />
     }
 }

@@ -1,7 +1,7 @@
 use html::P;
 use leptos::*;
 
-use crate::commands::typewriter::TypeWriter;
+use crate::commands::{search::InvalidOption, typewriter::TypeWriter};
 
 pub fn intro_text() -> HtmlElement<P> {
     view! {
@@ -19,8 +19,18 @@ pub fn intro_text() -> HtmlElement<P> {
     }
 }
 
+pub fn check_cmd_args_empty(cmd: &String) -> bool {
+    cmd.split_whitespace().count() == 1
+}
+
 #[component]
 pub fn Intro(#[prop()] cmd: String, #[prop(default=Box::new(|| ()))] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView{
+    if !check_cmd_args_empty(&cmd) {
+        return view! {
+            <InvalidOption cmd=cmd on_finished=on_finished />
+        }
+    }
+
     view! {
         <TypeWriter html_to_type=intro_text() callback=on_finished />
     }
