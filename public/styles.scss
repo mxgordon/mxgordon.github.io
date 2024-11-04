@@ -112,6 +112,7 @@ p#input {
 
 .prompt-line {
     width: max-content;
+    margin-top: 0;
 
     > span:first-child {
         color: $yellow;

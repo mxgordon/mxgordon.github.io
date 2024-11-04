@@ -5,6 +5,9 @@ use html::Input;
 use leptos::*;
 use leptos::logging::log;
 
+use console_log;
+use log::debug;
+
 use crate::commands::about::*;
 use crate::commands::search::*;
 use crate::commands::typewriter::*;
@@ -67,22 +70,32 @@ pub fn Home() -> impl IntoView {
     let handleSubmit = move |e: SubmitEvent| {
         e.prevent_default();
 
+        debug!("1");
+        
         let potential_command = get_command(promptInput.get());
-
+        
+        debug!("2");
+        
         if let Some(command) = potential_command {
+            debug!("3");
             writePastCmds.update(|past| {
                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
                 past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
             });
+            debug!("4");
         } else {
             writePastCmds.update(|past| {
                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
                 past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
             });
         }
+        debug!("5");
         writeLoadingStage.set(1);
+        debug!("6");
         writePromptInput.set("".to_string());
+        debug!("7");
         writeAutoComplete.set(vec![]);
+        debug!("8");
     };
 
     let s = view!{<span>"intro"</span>};
