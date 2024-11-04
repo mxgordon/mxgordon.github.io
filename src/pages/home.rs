@@ -82,6 +82,7 @@ pub fn Home() -> impl IntoView {
         }
         writeLoadingStage.set(1);
         writePromptInput.set("".to_string());
+        writeAutoComplete.set(vec![]);
     };
 
     let s = view!{<span>"intro"</span>};
