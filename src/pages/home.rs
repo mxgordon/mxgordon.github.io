@@ -111,15 +111,17 @@ pub fn Home() -> impl IntoView {
                 <p class="prompt-line">{make_prompt()}
                 <TypeWriter html_to_type=s base_element=span() delay=200 chunk_sz=1 callback=Box::new(move ||(writeLoadingStage.set(1))) /></p>
 
-                <Show when=move || (loadingStage.get() > 0) fallback={|| view!{<p>X</p>}}>
+                <Show when=move || (loadingStage.get() > 0) fallback={move || view!{<p>X</p>}}>
                     <TypeWriter html_to_type=intro_text() callback=Box::new(move ||(writeLoadingStage.set(2))) />
                 </Show>
 
                 {pastCmds}
+                {pastCmds.get().len()}
 
-                <Show when=move || (loadingStage.get() > 1) fallback={|| view!{<p>XX</p>}}>
+                <Show when=move || (loadingStage.get() > 1) fallback={move || view!{<p>XX</p>}}>
                     <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) autocomplete=autocomplete />
                 </Show>
+                <p>{loadingStage}</p>
             </div>
         </ErrorBoundary>
     }
