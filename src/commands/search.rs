@@ -1,7 +1,7 @@
 use leptos::{html::P, IntoView};
 use leptos::*;
 
-use crate::commands::about::check_cmd_args_empty;
+use crate::commands::utils::*;
 use crate::commands::typewriter::TypeWriter;
 
 use super::about::Intro;
@@ -49,31 +49,42 @@ pub fn help_text() -> HtmlElement<P> {
     }
 }
 
-#[component]
-pub fn Help(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
-    if !check_cmd_args_empty(&cmd) {
-        return view! {
-            <InvalidOption cmd=cmd on_finished=on_finished />
+pub fn help_text_1_arg(cmd_name: String) -> HtmlElement<P> {
+    let cmd = get_command(cmd_name.to_string());
+
+    if let Some(cmd) = cmd {
+        view! {
+            <p>
+                <p>{cmd.name}": "{cmd.syntax}</p>
+                <p>{cmd.description}</p>
+            </p> 
+        }
+    } else {
+        view! {
+            <p>"help: "{cmd_name}": command not found"</p>
         }
     }
+}
+
+#[component]
+pub fn Help(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
+    let cmd_split = cmd.split_whitespace().map(|s| s.to_owned()).collect::<Vec<String>>();
     
-    view! {
-        <TypeWriter html_to_type=help_text() callback=on_finished/>
+    match cmd_split.len() {
+        1 => view! {
+            <TypeWriter html_to_type=help_text() callback=on_finished/>
+        },
+        2 => view! {
+            <TypeWriter html_to_type=help_text_1_arg(cmd_split[1].clone()) callback=on_finished/>
+        },
+        n => {
+            view! {
+                <TypeWriter html_to_type=view!{<p>"help: expected 0 or 1 arguments, received "{n}</p>} callback=on_finished/>
+            }
+        } 
     }
-}
-
-#[component]
-pub fn CommandNotFound(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
-    let cmd_name = cmd.split_ascii_whitespace().next().unwrap_or_default().to_string();
-
-    view! {
-        <TypeWriter html_to_type=view!{<p>{cmd_name}": command not found"</p>} callback=on_finished />
-    }
-}
-
-#[component]
-pub fn InvalidOption(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
-    view! {
-        <TypeWriter html_to_type=view!{<p>{cmd}": invalid option"</p>} callback=on_finished />
-    }
+    
+    // view! {
+    //     <TypeWriter html_to_type=help_text() callback=on_finished/>
+    // }
 }

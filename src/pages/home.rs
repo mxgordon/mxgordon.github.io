@@ -8,6 +8,7 @@ use leptos::logging::log;
 use crate::commands::about::*;
 use crate::commands::search::*;
 use crate::commands::typewriter::*;
+use crate::commands::utils::*;
 
 fn make_prompt() -> HtmlElement<html::Span>{
     view! {

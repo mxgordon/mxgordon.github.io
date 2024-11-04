@@ -1,7 +1,7 @@
 use html::P;
 use leptos::*;
 
-use crate::commands::{search::InvalidOption, typewriter::TypeWriter};
+use crate::commands::{typewriter::TypeWriter, utils::*};
 
 pub fn intro_text() -> HtmlElement<P> {
     view! {
@@ -17,10 +17,6 @@ pub fn intro_text() -> HtmlElement<P> {
             <p>"Made using "<a href="https://www.rust-lang.org/" target="_blank" rel="noopener noreferrer">"Rust"</a>" 🦀 and "<a href="https://leptos.dev/" target="_blank" rel="noopener noreferrer">"Leptos"</a>"!"</p>
         </p>
     }
-}
-
-pub fn check_cmd_args_empty(cmd: &String) -> bool {
-    cmd.split_whitespace().count() == 1
 }
 
 #[component]
