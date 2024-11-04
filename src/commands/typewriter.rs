@@ -7,6 +7,7 @@ use leptos::*;
 
 use leptos::logging::log;
 use leptos_dom::helpers::IntervalHandle;
+use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
@@ -142,9 +143,12 @@ pub fn TypeWriter(
             let current_element: RefCell<HtmlElement<AnyElement>> = RefCell::new(e.into());
             let current_text: RefCell<Option<Node>> = RefCell::new(None);
 
+            debug!("Typewriter on_mount");
+
             let cb = {
                 let intervalHandleRef = intervalHandleRef.clone();
                 move || {
+                    debug!("Typewriter callback");
                     let mut current_element = current_element.borrow_mut();
                     let mut idx = idxRef.borrow_mut();
                     let mut current_text = current_text.borrow_mut();
