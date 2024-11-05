@@ -147,7 +147,6 @@ pub fn TypeWriter(
             let cb = {
                 let intervalHandleRef = intervalHandleRef.clone();
                 move || {
-                    debug!("Typewriter callback");
                     let mut current_element = current_element.borrow_mut();
                     let mut idx = idxRef.borrow_mut();
                     let mut current_text = current_text.borrow_mut();
@@ -182,6 +181,17 @@ pub fn TypeWriter(
                                 text.push_str(&t);
 
                                 current_text.as_ref().unwrap().set_text_content(Some(&text));
+                                
+                                let window = window();
+                                let document = document();
+                                let body = document.body().unwrap();
+                                let current_scroll = window.scroll_y().unwrap();
+                                let target_scroll = body.scroll_height() as f64 - window.inner_height().unwrap().as_f64().unwrap();
+                            
+                                if (current_scroll + 1.) < target_scroll {  // +1 to avoid floating point errors
+                                    log!("scrolling... {} {}", current_scroll, target_scroll);
+                                    window.scroll_to_with_x_and_y(0.0, target_scroll);
+                                }
 
                                 iter_again = false;
                             }

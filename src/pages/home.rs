@@ -5,9 +5,6 @@ use html::Input;
 use leptos::*;
 use leptos::logging::log;
 
-use console_log;
-use log::debug;
-
 use crate::commands::about::*;
 use crate::commands::search::*;
 use crate::commands::typewriter::*;
