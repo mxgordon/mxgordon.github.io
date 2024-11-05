@@ -30,6 +30,10 @@ pub static COMMANDS: [Command; 2] = [
 ];
 
 pub fn search_commands(cmd: String) -> Vec<Command<'static>> {
+    if cmd.is_empty() {
+        return vec![];
+    }
+
     let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
     COMMANDS.iter().filter(|c| c.name.contains(&cmd_name)).cloned().collect()
 }

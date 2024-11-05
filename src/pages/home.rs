@@ -1,4 +1,5 @@
 use ev::Event;
+use ev::KeyboardEvent;
 use ev::SubmitEvent;
 use html::span;
 use html::Input;
@@ -21,6 +22,7 @@ pub fn PromptInput(
     #[prop()] prompt_input: ReadSignal<String>,
     #[prop()] on_submit: Box<dyn Fn(SubmitEvent) + 'static>,
     #[prop()] on_input: Box<dyn Fn(Event) + 'static>,
+    #[prop()] on_keydown: Box<dyn Fn(KeyboardEvent) + 'static>,
     #[prop()] autocomplete: ReadSignal<Vec<String>>,
 ) -> impl IntoView {
     let prompt_ref = create_node_ref::<Input>();
@@ -34,12 +36,11 @@ pub fn PromptInput(
     view! {
         <p class="prompt-line" >{make_prompt()}
             <form on:submit=on_submit>
-                <input ref=prompt_ref type="text" id="prompt" prop:value=prompt_input on:input=on_input spellcheck="false" autocomplete="off" aria-autocomplete="none" />
-                <Show when=move || (autocomplete.get().len() > 0)>
-                    <div class="autocomplete-options">
-                        <For each=move || autocomplete.get() key=|cmd_str| cmd_str.clone() children=|cmd| view!{<p>{cmd}</p>} />
-                    </div>
-                </Show>
+                <input ref=prompt_ref type="text" id="prompt" prop:value=prompt_input on:input=on_input on:keydown=on_keydown spellcheck="false" autocomplete="off" aria-autocomplete="none" />
+
+                <div class="autocomplete-options">
+                    <For each=move || autocomplete.get() key=|cmd_str| cmd_str.clone() children=|cmd| view!{<p>{cmd}</p>} />
+                </div>
             </form>
         </p>
     }
@@ -53,15 +54,32 @@ pub fn Home() -> impl IntoView {
     let (pastCmds, writePastCmds) = create_signal::<Vec<View>>(vec![]);
     let (autocomplete, writeAutoComplete) = create_signal::<Vec<String>>(vec![]);
 
+    let handleKeyDown = move |e: KeyboardEvent| {
+        let key = e.key();
+        // let new_value = promptInput.get();
+
+        match key.as_str() {
+            "Tab" => {
+                e.prevent_default();
+
+                let new_value = promptInput.get();
+                let potential_commands = search_commands(new_value);
+
+                if potential_commands.len() >= 1 {
+                    writePromptInput.set(potential_commands[0].name.to_string());
+                }
+            },
+            _ => {}
+        }
+
+        log!("{:?}", key);
+    };
+
     let handleInput = move |e: Event| {
         writePromptInput.set(event_target_value(&e));
         let new_value = promptInput.get();
 
-        if new_value != "" {
-            writeAutoComplete.set(search_commands(new_value).iter().map(|c| c.name.to_string()).collect());
-        } else {
-            writeAutoComplete.set(vec![]);
-        }
+        writeAutoComplete.set(search_commands(new_value).iter().map(|c| c.name.to_string()).collect());
     };
 
     let handleSubmit = move |e: SubmitEvent| {
@@ -117,7 +135,7 @@ pub fn Home() -> impl IntoView {
                 // {pastCmds}
 
                 <Show when=move || (loadingStage.get() > 1)>
-                    <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) autocomplete=autocomplete />
+                    <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) on_keydown=Box::new(handleKeyDown) autocomplete=autocomplete />
                 </Show>
             </div>
         </ErrorBoundary>
