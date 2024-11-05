@@ -51,12 +51,13 @@ pub fn PromptInput(
 pub fn Home() -> impl IntoView {
     let (promptInput, writePromptInput) = create_signal("".to_string());
     let (loadingStage, writeLoadingStage) = create_signal(0);
-    let (pastCmds, writePastCmds) = create_signal::<Vec<View>>(vec![]);
+    let (pastCmdsHtml, writePastCmdsHtml) = create_signal::<Vec<View>>(vec![]);
+    let (pastCmds, writePastCmds) = create_signal::<Vec<String>>(vec!["intro".to_string()]);
+    let (currentPastCmdIdx, writeCurrentPastCmdIdx) = create_signal(-1);
     let (autocomplete, writeAutoComplete) = create_signal::<Vec<String>>(vec![]);
 
     let handleKeyDown = move |e: KeyboardEvent| {
         let key = e.key();
-        // let new_value = promptInput.get();
 
         match key.as_str() {
             "Tab" => {
@@ -69,10 +70,35 @@ pub fn Home() -> impl IntoView {
                     writePromptInput.set(potential_commands[0].name.to_string());
                 }
             },
+            "ArrowUp" => {
+                e.prevent_default();
+                let next_idx = currentPastCmdIdx.get() + 1;
+
+                log!("{:?} {}", next_idx, currentPastCmdIdx.get());
+                
+                if next_idx < pastCmds.get().len() as i32 {
+                    log!("{:?} {} {}", next_idx, currentPastCmdIdx.get(), pastCmds.get().len());
+                    writeCurrentPastCmdIdx.set(next_idx);
+                    writePromptInput.set(pastCmds.get()[next_idx as usize].to_string());
+                }
+            },
+            "ArrowDown" => {
+                e.prevent_default();
+                let next_idx = currentPastCmdIdx.get() - 1;
+                match next_idx {
+                    -2 => {},
+                    -1 => {
+                        writeCurrentPastCmdIdx.set(next_idx);
+                        writePromptInput.set("".to_string())
+                    },
+                    next_idx => {
+                        writeCurrentPastCmdIdx.set(next_idx);
+                        writePromptInput.set(pastCmds.get()[next_idx as usize].to_string());
+                    }
+                }
+            },
             _ => {}
         }
-
-        log!("{:?}", key);
     };
 
     let handleInput = move |e: Event| {
@@ -88,19 +114,23 @@ pub fn Home() -> impl IntoView {
         let potential_command = get_command(promptInput.get());
         
         if let Some(command) = potential_command {
-            writePastCmds.update(|past| {
+            writePastCmdsHtml.update(|past| {
                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
                 past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
             });
         } else {
-            writePastCmds.update(|past| {
+            writePastCmdsHtml.update(|past| {
                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
                 past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
             });
         }
+        writePastCmds.update(|past| {
+            past.insert(0, promptInput.get());
+        });
         writeLoadingStage.set(1);
         writePromptInput.set("".to_string());
         writeAutoComplete.set(vec![]);
+        writeCurrentPastCmdIdx.set(-1);
     };
 
     let s = view!{<span>"intro"</span>};
@@ -130,9 +160,9 @@ pub fn Home() -> impl IntoView {
                     <TypeWriter html_to_type=intro_text() callback=Box::new(move ||(writeLoadingStage.set(2))) />
                 </Show>
 
-                {move || {log!("{:?}", pastCmds.get()); pastCmds}}
-                // {move || {pastCmds.get()}}
-                // {pastCmds}
+                {move || {log!("{:?}", pastCmdsHtml.get()); pastCmdsHtml}}
+                // {move || {pastCmdsHtml.get()}}
+                // {pastCmdsHtml}
 
                 <Show when=move || (loadingStage.get() > 1)>
                     <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) on_keydown=Box::new(handleKeyDown) autocomplete=autocomplete />
