@@ -143,7 +143,6 @@ pub fn TypeWriter(
             let current_element: RefCell<HtmlElement<AnyElement>> = RefCell::new(e.into());
             let current_text: RefCell<Option<Node>> = RefCell::new(None);
 
-            debug!("Typewriter on_mount");
 
             let cb = {
                 let intervalHandleRef = intervalHandleRef.clone();

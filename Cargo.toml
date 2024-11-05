@@ -15,6 +15,9 @@ leptos_router = { version = "0.6", features = ["csr", "nightly"] }
 console_log = "1"
 log = "0.4"
 console_error_panic_hook = "0.1"
+tracing = "0.1"
+tracing-wasm = "0.1"
+tracing-subscriber = "0.3"
 
 # utils
 # strum = { version = "0.25", features = ["derive", "strum_macros"] }
