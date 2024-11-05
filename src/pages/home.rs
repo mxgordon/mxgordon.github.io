@@ -97,8 +97,10 @@ pub fn Home() -> impl IntoView {
                     }
                 }
             },
-            _ => {}
+            _ => {return;}
         }
+        
+        writeAutoComplete.set(search_commands(promptInput.get()).iter().map(|c| c.name.to_string()).collect());
     };
 
     let handleInput = move |e: Event| {
