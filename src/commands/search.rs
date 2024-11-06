@@ -7,6 +7,7 @@ use crate::commands::typewriter::TypeWriter;
 use crate::commands::utils::*;
 
 use super::about::*;
+use super::gallery::Gallery;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Command<'a> {
@@ -16,7 +17,7 @@ pub struct Command<'a> {
     pub function: fn(String, Box<dyn Fn() + 'static>) -> View,
 }
 
-pub static COMMANDS: [Command; 3] = [
+pub static COMMANDS: [Command; 4] = [
     Command {
         name: "help",
         syntax: "help [command]",
@@ -35,6 +36,13 @@ pub static COMMANDS: [Command; 3] = [
         description: "The about me section, come learn more about my career, my hobbies, and my webste!",
         function: |cmd, on_finished,| view! { <About cmd={cmd} on_finished=on_finished/>},
     },
+    Command {
+        name: "gallery",
+        syntax: "gallery",
+        description: "My personal gallery of film photography! ",
+        function: |cmd, on_finished,| view! { <Gallery cmd={cmd} on_finished=on_finished/>},
+    },
+
 ];
 
 pub fn search_commands(cmd: String) -> Vec<Command<'static>> {

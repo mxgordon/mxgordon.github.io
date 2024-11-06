@@ -44,7 +44,7 @@ fn about_html() -> HtmlElement<P> {
             <div class="about-links">
                 <a href="https://github.com/mxgordon" target="_blank" rel="noopener noreferrer"><p><img src="/icons/github.png" />GitHub</p></a>
                 <a href="https://www.linkedin.com/in/max-gordon-533423221/" target="_blank" rel="noopener noreferrer"><p><img src="/icons/linkedin.png" />LinkedIn</p></a>
-                <a href="https://github.com/mxgordon" target="_blank" rel="noopener noreferrer"><p><img src="/icons/resume3.png" />Resume</p></a>
+                <a href="/documents/Max_Gordon_resume.pdf" target="_blank" rel="noopener noreferrer"><p><img src="/icons/resume.png" />Resume</p></a>
             </div>
             
         </p>
