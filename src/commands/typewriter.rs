@@ -2,7 +2,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::{cell::RefCell, fmt::Debug};
 
-use html::{AnyElement, ToHtmlElement, a, div, p, span};
+use html::{a, div, h1, h2, h3, img, li, p, span, ul, AnyElement, ToHtmlElement};
 use leptos::*;
 
 use leptos::logging::log;
@@ -83,26 +83,24 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>, chunk_sz: usi
         })
         .collect();
 
-    let mut next_element: Option<HtmlElement<AnyElement>> = None;
-
-    match root_name.as_str() {
-        "P" => {
-            next_element = Some(p().into());
-        }
-        "SPAN" => {
-            next_element = Some(span().into());
-        }
-        "A" => {
-            next_element = Some(a().into());
-        }
+    let next_element: Option<HtmlElement<AnyElement>> = match root_name.as_str() {
+        "P" => Some(p().into()),
+        "SPAN" => Some(span().into()),
+        "A" => Some(a().into()),
+        "H2" => Some(h2().into()),
+        "UL" => Some(ul().into()),
+        "LI" => Some(li().into()),
+        "IMG" => Some(img().into()),
+        "DIV" => Some(div().into()),
         other => {
             log!("Unknown element: {}", other);
+            None
         }
-    }
+    };
 
     let _ = next_element
         .clone()
-        .expect("Element should be initialized")
+        .expect(format!("Element: {} should be initialized", root_name.as_str()).as_str())
         .attrs(attrs);
 
     seq.push(TypeElement::Element {

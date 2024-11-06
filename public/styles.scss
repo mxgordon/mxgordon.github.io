@@ -88,6 +88,23 @@ input {
     }
 }
 
+h2 {
+    font-weight: normal;
+}
+
+.about-links {
+    p {
+        margin: 12px 0;
+    }
+
+    img {
+        display: inline-block;
+        height: 1.2rem;
+        margin: 0 .5rem;
+        vertical-align: sub;
+    }
+}
+
 .autocomplete-options {
     background-color: white;
     color: black;

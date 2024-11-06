@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use ev::Event;
 use ev::KeyboardEvent;
 use ev::SubmitEvent;
@@ -24,6 +26,7 @@ pub fn PromptInput(
     #[prop()] on_input: Box<dyn Fn(Event) + 'static>,
     #[prop()] on_keydown: Box<dyn Fn(KeyboardEvent) + 'static>,
     #[prop()] autocomplete: ReadSignal<Vec<String>>,
+    #[prop()] autocomplete_onclick: Rc<Box<dyn Fn(&String) + 'static>>,
 ) -> impl IntoView {
     let prompt_ref = create_node_ref::<Input>();
 
@@ -39,7 +42,15 @@ pub fn PromptInput(
                 <input ref=prompt_ref type="text" id="prompt" prop:value=prompt_input on:input=on_input on:keydown=on_keydown spellcheck="false" autocomplete="off" aria-autocomplete="none" />
 
                 <div class="autocomplete-options">
-                    <For each=move || autocomplete.get() key=|cmd_str| cmd_str.clone() children=|cmd| view!{<p>{cmd}</p>} />
+                    <For each=move || autocomplete.get() key=|cmd_str| cmd_str.clone() children=move |cmd| {
+                        let autocomplete_onclick = Rc::clone(&autocomplete_onclick);
+                        let cmd_clone = cmd.clone();
+                        view!{
+                            <p on:click=move |_e| {
+                                autocomplete_onclick(&cmd_clone);
+                            }>{cmd}</p>
+                        }
+                    } />
                 </div>
             </form>
         </p>
@@ -55,6 +66,11 @@ pub fn Home() -> impl IntoView {
     let (pastCmds, writePastCmds) = create_signal::<Vec<String>>(vec!["intro".to_string()]);
     let (currentPastCmdIdx, writeCurrentPastCmdIdx) = create_signal(-1);
     let (autocomplete, writeAutoComplete) = create_signal::<Vec<String>>(vec![]);
+
+    let handleAutocompleteClick = move |cmd: &String| {
+        writePromptInput.set(cmd.to_string());
+        writeAutoComplete.set(search_commands(promptInput.get()).iter().map(|c| c.name.to_string()).collect());
+    };
 
     let handleKeyDown = move |e: KeyboardEvent| {
         let key = e.key();
@@ -159,7 +175,7 @@ pub fn Home() -> impl IntoView {
                 <TypeWriter html_to_type=s base_element=span() delay=200 chunk_sz=1 callback=Box::new(move ||(writeLoadingStage.set(1))) /></p>
 
                 <Show when=move || (loadingStage.get() > 0)>
-                    <TypeWriter html_to_type=intro_text() callback=Box::new(move ||(writeLoadingStage.set(2))) />
+                    <Intro cmd="intro".to_string() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />
                 </Show>
 
                 {move || {log!("{:?}", pastCmdsHtml.get()); pastCmdsHtml}}
@@ -167,7 +183,7 @@ pub fn Home() -> impl IntoView {
                 // {pastCmdsHtml}
 
                 <Show when=move || (loadingStage.get() > 1)>
-                    <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) on_keydown=Box::new(handleKeyDown) autocomplete=autocomplete />
+                    <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) on_keydown=Box::new(handleKeyDown) autocomplete=autocomplete autocomplete_onclick=Rc::new(Box::new(handleAutocompleteClick)) />
                 </Show>
             </div>
         </ErrorBoundary>

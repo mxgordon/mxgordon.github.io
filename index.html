@@ -5,13 +5,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
     
-    <link data-trunk rel="css" href="public/styles.css" />
+    <!-- <link data-trunk rel="css" href="public/styles.css" /> -->
+    <link data-trunk rel="scss" href="public/styles.scss" />
 
     <!-- Include favicon in dist output: see https://trunkrs.dev/assets/#icon -->
     <link data-trunk rel="icon" href="public/favicon.ico" />
 
     <!-- include support for `wasm-bindgen --weak-refs` - see: https://rustwasm.github.io/docs/wasm-bindgen/reference/weak-references.html -->
     <link data-trunk rel="rust" data-wasm-opt="z" data-weak-refs />
+
+    <link data-trunk rel="copy-dir" href="/public/icons/"/> 
+    <!-- TODO preload the folder of icons -->
   </head>
   <body></body>
 </html>

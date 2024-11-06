@@ -1,10 +1,12 @@
-use leptos::{html::P, IntoView};
+use std::rc::Rc;
+
 use leptos::*;
+use leptos::{IntoView, html::P};
 
-use crate::commands::utils::*;
 use crate::commands::typewriter::TypeWriter;
+use crate::commands::utils::*;
 
-use super::about::Intro;
+use super::about::*;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Command<'a> {
@@ -14,19 +16,25 @@ pub struct Command<'a> {
     pub function: fn(String, Box<dyn Fn() + 'static>) -> View,
 }
 
-pub static COMMANDS: [Command; 2] = [
+pub static COMMANDS: [Command; 3] = [
     Command {
         name: "help",
         syntax: "help [command]",
         description: "Get help on a command",
-        function: |cmd, on_finished| view!{ <Help cmd={cmd} on_finished=on_finished/>},
+        function: |cmd, on_finished,| view! { <Help cmd={cmd} on_finished=on_finished/>},
     },
     Command {
         name: "intro",
         syntax: "intro",
         description: "Introduction to my website",
-        function: |cmd, on_finished| view!{ <Intro cmd={cmd} on_finished=on_finished/>},
-    }
+        function: |cmd, on_finished,| view! { <Intro cmd={cmd} on_finished=on_finished/>},
+    },
+    Command {
+        name: "about",
+        syntax: "about",
+        description: "The about me section, come learn more about my career, my hobbies, and my webste!",
+        function: |cmd, on_finished,| view! { <About cmd={cmd} on_finished=on_finished/>},
+    },
 ];
 
 pub fn search_commands(cmd: String) -> Vec<Command<'static>> {
@@ -35,7 +43,11 @@ pub fn search_commands(cmd: String) -> Vec<Command<'static>> {
     }
 
     let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
-    COMMANDS.iter().filter(|c| c.name.contains(&cmd_name)).cloned().collect()
+    COMMANDS
+        .iter()
+        .filter(|c| c.name.contains(&cmd_name))
+        .cloned()
+        .collect()
 }
 
 pub fn get_command(cmd: String) -> Option<Command<'static>> {
@@ -61,7 +73,7 @@ pub fn help_text_1_arg(cmd_name: String) -> HtmlElement<P> {
             <p>
                 <p>{cmd.name}": "{cmd.syntax}</p>
                 <p>{cmd.description}</p>
-            </p> 
+            </p>
         }
     } else {
         view! {
@@ -71,9 +83,15 @@ pub fn help_text_1_arg(cmd_name: String) -> HtmlElement<P> {
 }
 
 #[component]
-pub fn Help(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
-    let cmd_split = cmd.split_whitespace().map(|s| s.to_owned()).collect::<Vec<String>>();
-    
+pub fn Help(
+    #[prop(into)] cmd: String,
+    #[prop()] on_finished: Box<dyn Fn() + 'static>,
+) -> impl IntoView {
+    let cmd_split = cmd
+        .split_whitespace()
+        .map(|s| s.to_owned())
+        .collect::<Vec<String>>();
+
     match cmd_split.len() {
         1 => view! {
             <TypeWriter html_to_type=help_text() callback=on_finished/>
@@ -85,10 +103,6 @@ pub fn Help(#[prop(into)] cmd: String, #[prop()] on_finished: Box<dyn Fn() + 'st
             view! {
                 <TypeWriter html_to_type=view!{<p>"help: expected 0 or 1 arguments, received "{n}</p>} callback=on_finished/>
             }
-        } 
+        }
     }
-    
-    // view! {
-    //     <TypeWriter html_to_type=help_text() callback=on_finished/>
-    // }
 }
