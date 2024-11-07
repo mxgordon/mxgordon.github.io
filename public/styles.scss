@@ -105,6 +105,22 @@ h2 {
     }
 }
 
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+
+    .gallery-item {
+        width: min-content;
+        padding: .5rem;
+
+
+        img {
+            height: 12rem;
+        }
+    }
+}
+    
+
 .autocomplete-options {
     background-color: white;
     color: black;

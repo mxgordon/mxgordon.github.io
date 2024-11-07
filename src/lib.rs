@@ -28,6 +28,7 @@ pub fn app() -> impl IntoView {
         <Router>
             <Routes>
                 <Route path="/" view=Home/>
+                <Route path="/img/:imgname" view=Home/>
                 <Route path="/*" view=NotFound/>
             </Routes>
         </Router>
