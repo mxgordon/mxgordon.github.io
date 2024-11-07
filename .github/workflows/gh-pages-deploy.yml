@@ -62,6 +62,10 @@ jobs:
       - name: "Copy CNAME into /dist"
         run: cp CNAME dist/
 
+        
+      - name: Copy index.html to 404.html
+        run: cp dist/index.html dist/404.html
+
 
       # Deploy to gh-pages branch
       # - name: Deploy 🚀
