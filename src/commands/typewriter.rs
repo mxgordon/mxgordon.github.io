@@ -187,7 +187,6 @@ pub fn TypeWriter(
                                 let target_scroll = body.scroll_height() as f64 - window.inner_height().unwrap().as_f64().unwrap();
                             
                                 if (current_scroll + 1.) < target_scroll {  // +1 to avoid floating point errors
-                                    log!("scrolling... {} {}", current_scroll, target_scroll);
                                     window.scroll_to_with_x_and_y(0.0, target_scroll);
                                 }
 

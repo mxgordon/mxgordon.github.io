@@ -5,28 +5,28 @@ use svg::G;
 use crate::commands::{typewriter::TypeWriter, utils::{check_cmd_args_empty, InvalidOption}};
 
 #[component]
-pub fn GalleryImage(#[prop(into)] src: String, #[prop(into)] description: String) -> impl IntoView {
-    let src = format!("/cdn-cgi/image/format=webp/{}", src);
+pub fn GalleryImage(#[prop(into)] gallery_entry: GalleryEntry) -> impl IntoView {
+    let src = format!("https://mxgordon.com/cdn-cgi/image/format=webp,height=768/img/{}", gallery_entry.name);
 
     view! {
         // <img src=src alt=alt />
         <div class="gallery-item">
-            <a href=src.clone() target="_blank" rel="noopener noreferrer">
-                <img src=src alt=description.clone() />
+            <a href=format!("/img/{}", gallery_entry.name) target="_blank" rel="noopener noreferrer">
+                <img src=src alt=gallery_entry.description />
             </a>
-            <p>{description}</p>
+            <p>{gallery_entry.description}</p>
         </div>
     }
 }
 
 #[derive(Clone)]
-pub struct GalleryEntry<'a> {
-    name: &'a str,
-    src: &'a str,
-    description: &'a str,
+pub struct GalleryEntry {
+    pub name: &'static str,
+    pub src: &'static str,
+    pub description: &'static str,
 }
 
-pub fn get_gallery<'a>() -> Vec<GalleryEntry<'a>> {
+pub fn get_gallery() -> Vec<GalleryEntry> {
     vec! [
         GalleryEntry {
             name: "beach_sunset",
@@ -86,7 +86,7 @@ pub fn gallery_html<'a>() -> HtmlElement<Div> {
             <div class="gallery">
                 <For each=move || get_gallery().into_iter() key=|entry| entry.name.to_string() children=move |entry| {
                     view! {
-                        <GalleryImage src=entry.src description=entry.description />
+                        <GalleryImage gallery_entry=entry />
                     }
                 } />
             </div>

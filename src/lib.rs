@@ -1,6 +1,7 @@
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
+use pages::img_viewer::ImgViewer;
 
 mod pages;
 mod commands;
@@ -28,7 +29,7 @@ pub fn app() -> impl IntoView {
         <Router>
             <Routes>
                 <Route path="/" view=Home/>
-                <Route path="/img/:imgname" view=Home/>
+                <Route path="/img/:name" view=ImgViewer/>
                 <Route path="/*" view=NotFound/>
             </Routes>
         </Router>
