@@ -119,6 +119,17 @@ h2 {
         }
     }
 }
+
+.img-view {
+    display: flex;
+    justify-content: space-around; 
+    height: 100%;
+
+    img {
+        height: 100%;
+        padding: 12px;
+    }
+}
     
 
 .autocomplete-options {

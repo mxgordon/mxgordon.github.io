@@ -1,10 +1,7 @@
-use std::rc::Rc;
-
 use leptos::*;
 use leptos::{IntoView, html::P};
 
 use crate::commands::typewriter::TypeWriter;
-use crate::commands::utils::*;
 
 use super::about::*;
 use super::gallery::Gallery;

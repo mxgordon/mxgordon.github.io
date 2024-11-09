@@ -1,10 +1,7 @@
 use leptos::*;
-use leptos_dom::helpers::location;
 use leptos_router::*;
 
-use crate::commands::gallery::{get_gallery, Gallery, GalleryEntry};
-
-use leptos::logging::log;
+use crate::commands::gallery::{get_gallery, GalleryEntry};
 
 #[derive(Params, PartialEq)]
 struct ImgParams {
@@ -21,19 +18,9 @@ pub fn ImgViewer() -> impl IntoView {
 
     let gallery = get_gallery();
 
-    let loc = location();
-
-    let redir = gallery.iter().find(|entry| entry.name == name());
-
-    if let Some(redir) = redir {
-        let _ = loc.set_href(redir.src);
-    }
-
-
-    log!("{}", name());
-
     view! {
-        // <img src={gallery.iter().find(|entry| entry.name == name()).unwrap_or(&GalleryEntry{src:"", name:"",description:""}).src} alt="placeholder" />
-        <p>Nurrr</p>
+        <div class="img-view">
+            <img src={gallery.iter().find(|entry| entry.name == name()).unwrap_or(&GalleryEntry{src:"", name:"",description:""}).src} alt="placeholder" />
+        </div>
     }
 }

@@ -29,7 +29,7 @@ pub fn app() -> impl IntoView {
         <Router>
             <Routes>
                 <Route path="/" view=Home/>
-                <Route path="/img/:name" view=ImgViewer/>
+                <Route path="/view/:name" view=ImgViewer/>
                 <Route path="/*" view=NotFound/>
             </Routes>
         </Router>

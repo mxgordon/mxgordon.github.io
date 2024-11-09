@@ -2,12 +2,11 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::{cell::RefCell, fmt::Debug};
 
-use html::{a, div, h1, h2, h3, img, li, p, span, ul, AnyElement, ToHtmlElement};
+use html::{a, div, h2, img, li, p, span, ul, AnyElement, ToHtmlElement};
 use leptos::*;
 
 use leptos::logging::log;
 use leptos_dom::helpers::IntervalHandle;
-use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
