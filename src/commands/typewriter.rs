@@ -2,7 +2,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::{cell::RefCell, fmt::Debug};
 
-use html::{a, div, h2, img, li, p, span, ul, AnyElement, ToHtmlElement};
+use html::{a, div, h2, h3, iframe, img, li, p, span, ul, AnyElement, ToHtmlElement};
 use leptos::*;
 
 use leptos::logging::log;
@@ -87,10 +87,12 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>, chunk_sz: usi
         "SPAN" => Some(span().into()),
         "A" => Some(a().into()),
         "H2" => Some(h2().into()),
+        "H3" => Some(h3().into()),
         "UL" => Some(ul().into()),
         "LI" => Some(li().into()),
         "IMG" => Some(img().into()),
         "DIV" => Some(div().into()),
+        "IFRAME" => Some(iframe().into()),
         other => {
             log!("Unknown element: {}", other);
             None

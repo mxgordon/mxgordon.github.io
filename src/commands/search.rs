@@ -4,6 +4,7 @@ use leptos::{IntoView, html::P};
 use crate::commands::typewriter::TypeWriter;
 
 use super::about::*;
+use super::projects::*;
 use super::gallery::Gallery;
 
 #[derive(Debug, Copy, Clone)]
@@ -14,7 +15,19 @@ pub struct Command<'a> {
     pub function: fn(String, Box<dyn Fn() + 'static>) -> View,
 }
 
-pub static COMMANDS: [Command; 4] = [
+pub static COMMANDS: [Command; 5] = [
+    Command {
+        name: "about",
+        syntax: "about",
+        description: "The about me section, come learn more about my career, my hobbies, and my webste!",
+        function: |cmd, on_finished,| view! { <About cmd={cmd} on_finished=on_finished/>},
+    },
+    Command {
+        name: "gallery",
+        syntax: "gallery",
+        description: "My personal gallery of film photography! ",
+        function: |cmd, on_finished,| view! { <Gallery cmd={cmd} on_finished=on_finished/>},
+    },
     Command {
         name: "help",
         syntax: "help [command]",
@@ -28,17 +41,11 @@ pub static COMMANDS: [Command; 4] = [
         function: |cmd, on_finished,| view! { <Intro cmd={cmd} on_finished=on_finished/>},
     },
     Command {
-        name: "about",
-        syntax: "about",
-        description: "The about me section, come learn more about my career, my hobbies, and my webste!",
-        function: |cmd, on_finished,| view! { <About cmd={cmd} on_finished=on_finished/>},
-    },
-    Command {
-        name: "gallery",
-        syntax: "gallery",
-        description: "My personal gallery of film photography! ",
-        function: |cmd, on_finished,| view! { <Gallery cmd={cmd} on_finished=on_finished/>},
-    },
+        name: "projects",
+        syntax: "projects [project_name]",
+        description: "All my public projects, past and present.",
+        function: |cmd, on_finished| view! { <Projects cmd={cmd} on_finished=on_finished />}
+    }
 
 ];
 
@@ -47,17 +54,21 @@ pub fn search_commands(cmd: String) -> Vec<Command<'static>> {
         return vec![];
     }
 
-    let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
+    let cmd_name = cmd.split_whitespace().next().unwrap_or_default().to_lowercase();
     COMMANDS
         .iter()
-        .filter(|c| c.name.contains(&cmd_name))
+        .filter(|c| c.name.starts_with(&cmd_name))
         .cloned()
         .collect()
 }
 
 pub fn get_command(cmd: String) -> Option<Command<'static>> {
-    let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
-    COMMANDS.iter().find(|c| c.name == cmd_name).cloned()
+    let possible_commands = search_commands(cmd);
+    if possible_commands.len() == 0 {
+        None
+    } else {
+        Some(possible_commands[0])
+    }
 }
 
 pub fn help_text() -> HtmlElement<P> {

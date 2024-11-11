@@ -82,7 +82,7 @@ pub fn get_gallery() -> Vec<GalleryEntry> {
     ]
 }
 
-pub fn gallery_html<'a>() -> HtmlElement<Div> {
+pub fn gallery_html() -> HtmlElement<Div> {
     view! {
         <div>
             <h2>"My Gallery"</h2>
