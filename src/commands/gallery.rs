@@ -14,7 +14,6 @@ pub fn GalleryImage(#[prop(into)] gallery_entry: GalleryEntry) -> impl IntoView 
     let src = format!("https://mxgordon.com/cdn-cgi/image/format=webp,height=768/img/{}", last_two.join("/"));
 
     view! {
-        // <img src=src alt=alt />
         <div class="gallery-item">
             <a href=format!("/view/{}", gallery_entry.name) target="_blank" rel="noopener noreferrer">
                 <img src=src alt=gallery_entry.description />
@@ -66,7 +65,7 @@ pub fn get_gallery() -> Vec<GalleryEntry> {
         GalleryEntry {
             name: "cusco_street",
             src: "https://res.cloudinary.com/dtz40humd/image/upload/v1730920375/img2_047_result_jumilw.jpg", 
-            description: "A view of Cusco's beautiful red tiled roofs, with it's distinctive mountainous skyline."
+            description: "A view of Cusco's beautiful red tiled roofs, with its distinctive mountainous skyline."
         },
         GalleryEntry {
             name: "cusco_skyline",

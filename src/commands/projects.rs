@@ -1,7 +1,7 @@
 use html::Div;
 use leptos::*;
 
-use crate::commands::typewriter::TypeWriter;
+use crate::commands::{typewriter::TypeWriter, utils::{check_cmd_args_empty, InvalidOption}};
 
 #[derive(Clone)]
 pub struct Project {
@@ -23,7 +23,7 @@ pub fn get_projects() -> Vec<Project> {
         },
         Project {
             name: "Personal Website".to_string(),
-            description: "I build this website entirely in Rust and Leptos using web-assembly in order to show off my projects and photography. I picked Rust as its both fast and growing in popularity!".to_string(),
+            description: "I built this website entirely in Rust and Leptos using web-assembly in order to show off my projects and photography. I picked Rust as it's both fast and growing in popularity!".to_string(),
             github_link: "https://github.com/mxgordon/mxgordon.github.io".to_string(),
             image_link: "https://mxgordon.com/cdn-cgi/image/format=webp/img/v1731358909/personal-website-cover_t5tefc.png".to_string(),
             project_link: Some("/".to_string()),
@@ -45,7 +45,7 @@ pub fn ProjectTile(#[prop()] project: Project) -> impl IntoView {
                 <img src={project.image_link} alt=""/>
             </a>
             <div class="links" >
-                <a href={project.github_link} target="_blank" rel="noopener noreferrer" >"Github Repository"</a>
+                <a href={project.github_link} target="_blank" rel="noopener noreferrer" >"GitHub Repository"</a>
                 <Show when={move || project_link2.is_some()} >
                     <a href={project.project_link.clone().unwrap()} target="_blank" rel="noopener noreferrer">"Project Link"</a>
                 </Show>
@@ -73,6 +73,12 @@ pub fn projects_html() -> HtmlElement<Div> {
 
 #[component]
 pub fn Projects(#[prop()] cmd: String, #[prop(default=Box::new(|| ()))] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
+    if !check_cmd_args_empty(&cmd) {
+        return view! {
+            <InvalidOption cmd=cmd on_finished=on_finished />
+        }
+    }
+    
     view! {
         <TypeWriter html_to_type=projects_html() callback=on_finished  />
     }

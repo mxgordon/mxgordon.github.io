@@ -36,8 +36,8 @@ fn about_html() -> HtmlElement<P> {
     view! {
         <p>
             <h2>"About Me"</h2>
-            <p>"I am a computer science BS/MS student at Worcester Polytechnic University ("<a href="https://www.wpi.edu/" target="_blank" rel="noopener noreferrer">"WPI"</a>"). I have a strong interest in systems-level programming and financial technology. In high school, I was on a FIRST robotics ("<a href="https://www.firstinspires.org/robotics/frc" target="_blank" rel="noopener noreferrer">"FRC"</a>") team, where I discovered my passions for programming, electronics, and additive manufactoring."</p>
-            <p>"Last summer, I interned at "<a href="https://www.finra.org/about" target="_blank" rel="noopener noreferrer">"FINRA"</a>" where I explored my interest for financial technology. Fall semester this year (2024), I spent 2 months studying abroad in Panama City, working with "<a href="https://www.simpleaf.earth/" target="_blank" rel="noopener noreferrer">"simple af"</a>". A growing sustainable design studio manufacturing fabric goods from used fabrics like billboards and clothes, expanding the circular economy in Latin America."</p>
+            <p>"I am a computer science BS/MS student at Worcester Polytechnic University ("<a href="https://www.wpi.edu/" target="_blank" rel="noopener noreferrer">"WPI"</a>"). I have a strong interest in systems-level programming and financial technology. In high school, I was on a FIRST robotics ("<a href="https://www.firstinspires.org/robotics/frc" target="_blank" rel="noopener noreferrer">"FRC"</a>") team, where I discovered my passions for programming, electronics, and additive manufacturing."</p>
+            <p>"Last summer, I interned at "<a href="https://www.finra.org/about" target="_blank" rel="noopener noreferrer">"FINRA"</a>" where I explored my interest for financial technology. This fall semester (2024), I spent 2 months studying abroad in Panama City, working with "<a href="https://www.simpleaf.earth/" target="_blank" rel="noopener noreferrer">"simple af"</a>", a growing sustainable design studio. Their focus is manufacturing fabric goods from used fabrics such as billboards and clothes, with the goal of expanding the circular economy in Latin America."</p>
             <p>"In my freetime I like to shoot film photography (try the `"<span class="orange">"gallery"</span>"` command). Additionally, I enjoy 3D printing and tinkering with my printer."</p>
             <p>"For more information about me, check out these links:"</p>
 
@@ -45,6 +45,7 @@ fn about_html() -> HtmlElement<P> {
                 <a href="https://github.com/mxgordon" target="_blank" rel="noopener noreferrer"><p><img src="/icons/github.png" />GitHub</p></a>
                 <a href="https://www.linkedin.com/in/max-gordon-533423221/" target="_blank" rel="noopener noreferrer"><p><img src="/icons/linkedin.png" />LinkedIn</p></a>
                 <a href="/documents/Max_Gordon_resume.pdf" target="_blank" rel="noopener noreferrer"><p><img src="/icons/resume.png" />Resume</p></a>
+                <a href="mailto:mgordon291us@gmail.com" target="_blank" rel="noopener noreferrer"><p><img src="/icons/email.png" />Email</p></a>
             </div>
             
         </p>

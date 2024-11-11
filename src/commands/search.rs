@@ -19,7 +19,7 @@ pub static COMMANDS: [Command; 5] = [
     Command {
         name: "about",
         syntax: "about",
-        description: "The about me section, come learn more about my career, my hobbies, and my webste!",
+        description: "The 'about me' section; come learn more about my career, my hobbies, and my webste!",
         function: |cmd, on_finished,| view! { <About cmd={cmd} on_finished=on_finished/>},
     },
     Command {
@@ -31,13 +31,13 @@ pub static COMMANDS: [Command; 5] = [
     Command {
         name: "help",
         syntax: "help [command]",
-        description: "Get help on a command",
+        description: "Get help on a command.",
         function: |cmd, on_finished,| view! { <Help cmd={cmd} on_finished=on_finished/>},
     },
     Command {
         name: "intro",
         syntax: "intro",
-        description: "Introduction to my website",
+        description: "The introduction to my website.",
         function: |cmd, on_finished,| view! { <Intro cmd={cmd} on_finished=on_finished/>},
     },
     Command {
