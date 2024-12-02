@@ -1,12 +1,16 @@
+use std::ops::Deref;
 use std::rc::Rc;
 
 use ev::Event;
 use ev::KeyboardEvent;
 use ev::SubmitEvent;
 use html::span;
+use html::AnyElement;
 use html::Input;
 use leptos::*;
 use leptos::logging::log;
+use wasm_bindgen::JsCast;
+use web_sys::{HtmlInputElement, Element};
 
 use crate::commands::about::*;
 use crate::commands::search::*;

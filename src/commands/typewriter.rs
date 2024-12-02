@@ -7,6 +7,7 @@ use leptos::*;
 
 use leptos::logging::log;
 use leptos_dom::helpers::IntervalHandle;
+use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
@@ -133,6 +134,10 @@ pub fn TypeWriter(
 
     break_down_html(&html_to_type.clone(), &mut charSeq, chunk_sz);
 
+    // let onscroll_closure = Closure::wrap(Box::new(|e: web_sys::Event| { log!("scroll: {:?}", e); }) as Box<dyn FnMut(_)>);
+    // document().set_onscroll(Some(onscroll_closure.as_ref().unchecked_ref()));
+    // onscroll_closure.forget();
+
     container_div_ref.on_load(move |e| {
         let _ = e.on_mount(move |e| {
             let idxRef = RefCell::new(0);
@@ -157,6 +162,7 @@ pub fn TypeWriter(
 
                             intervalHandleRef.borrow_mut().unwrap().clear();
                             callback();
+                            // document().set_onscroll(None); // Remove onscroll callback
                             return;
                         }
 
@@ -190,6 +196,7 @@ pub fn TypeWriter(
                                 if (current_scroll + 1.) < target_scroll {  // +1 to avoid floating point errors
                                     window.scroll_to_with_x_and_y(0.0, target_scroll);
                                 }
+
 
                                 iter_again = false;
                             }

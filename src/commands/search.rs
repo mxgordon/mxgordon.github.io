@@ -17,6 +17,12 @@ pub struct Command<'a> {
 
 pub static COMMANDS: [Command; 5] = [
     Command {
+        name: "intro",
+        syntax: "intro",
+        description: "The introduction to my website.",
+        function: |cmd, on_finished,| view! { <Intro cmd={cmd} on_finished=on_finished/>},
+    },
+    Command {
         name: "about",
         syntax: "about",
         description: "The 'about me' section; come learn more about my career, my hobbies, and my webste!",
@@ -29,23 +35,17 @@ pub static COMMANDS: [Command; 5] = [
         function: |cmd, on_finished,| view! { <Gallery cmd={cmd} on_finished=on_finished/>},
     },
     Command {
+        name: "projects",
+        syntax: "projects [project_name]",
+        description: "All my public projects, past and present.",
+        function: |cmd, on_finished| view! { <Projects cmd={cmd} on_finished=on_finished />}
+    },
+    Command {
         name: "help",
         syntax: "help [command]",
         description: "Get help on a command.",
         function: |cmd, on_finished,| view! { <Help cmd={cmd} on_finished=on_finished/>},
     },
-    Command {
-        name: "intro",
-        syntax: "intro",
-        description: "The introduction to my website.",
-        function: |cmd, on_finished,| view! { <Intro cmd={cmd} on_finished=on_finished/>},
-    },
-    Command {
-        name: "projects",
-        syntax: "projects [project_name]",
-        description: "All my public projects, past and present.",
-        function: |cmd, on_finished| view! { <Projects cmd={cmd} on_finished=on_finished />}
-    }
 
 ];
 

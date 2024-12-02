@@ -38,7 +38,7 @@ pub fn ProjectTile(#[prop()] project: Project) -> impl IntoView {
     let link = if project_link2.is_some() {project.project_link.clone().unwrap()} else {project.github_link.clone()};
 
     view! {
-        <div class="project-tile" style="background: filter(url(\"https://res.cloudinary.com/dtz40humd/image/upload/v1731281424/webgl-cover_hrdien.png\"), blur(5px)) no-repeat center;">
+        <div class="project-tile">
             <h3>{project.name}</h3>
             <p>{project.description}</p>
             <a href={link} target="_blank" rel="noopener noreferrer">
