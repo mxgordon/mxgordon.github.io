@@ -22,6 +22,13 @@ pub fn get_projects() -> Vec<Project> {
             project_link: Some("/WebGL-Projects/".to_string()),
         },
         Project {
+            name: "Conway's (multithreaded) Game of Life".to_string(),
+            description: "Conway's game of life, written in C++ using pthread.h and semaphores.h for a custom message passing system that load-balances to ensure optimal multithreading".to_string(),
+            github_link: "https://github.com/mxgordon/multithreaded-game-of-life".to_string(),
+            image_link: "https://mxgordon.com/cdn-cgi/image/format=webp/img//v1733350692/game-of-life_uremjv.jpg".to_string(),
+            project_link: None
+        },
+        Project {
             name: "Personal Website".to_string(),
             description: "I built this website entirely in Rust and Leptos using web-assembly in order to show off my projects and photography. I picked Rust as it's both fast and growing in popularity!".to_string(),
             github_link: "https://github.com/mxgordon/mxgordon.github.io".to_string(),
