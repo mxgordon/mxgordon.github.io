@@ -132,24 +132,35 @@ pub fn Home() -> impl IntoView {
 
     let handleSubmit = move |e: SubmitEvent| {
         e.prevent_default();
+        let input = promptInput.get();
+        let mut cmd_splits = input.split_whitespace();
 
-        let potential_command = get_command(promptInput.get());
-        
-        if let Some(command) = potential_command {
+        if let Some(cmd) = cmd_splits.next() {
+
+            let potential_command = get_command(cmd.to_string());
+            
+            if let Some(command) = potential_command {
+                writePastCmdsHtml.update(|past| {
+                    past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
+                    past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
+                });
+            } else {
+                writePastCmdsHtml.update(|past| {
+                    past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
+                    past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
+                });
+            }
+            writeLoadingStage.set(1);
+
+        } else {                
             writePastCmdsHtml.update(|past| {
-                past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-                past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
+                past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());   
             });
-        } else {
-            writePastCmdsHtml.update(|past| {
-                past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-                past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
-            });
+
         }
         writePastCmds.update(|past| {
             past.insert(0, promptInput.get());
         });
-        writeLoadingStage.set(1);
         writePromptInput.set("".to_string());
         writeAutoComplete.set(vec![]);
         writeCurrentPastCmdIdx.set(-1);

@@ -36,8 +36,8 @@ pub static COMMANDS: [Command; 5] = [
     },
     Command {
         name: "projects",
-        syntax: "projects [project_name]",
-        description: "All my public projects, past and present.",
+        syntax: "projects [filter]",
+        description: "All my public projects, past and present. You can filter by status, options are `complete`, `in-progress`, and `dead`",
         function: |cmd, on_finished| view! { <Projects cmd={cmd} on_finished=on_finished />}
     },
     Command {
@@ -63,8 +63,8 @@ pub fn search_commands(cmd: String) -> Vec<Command<'static>> {
 }
 
 pub fn get_command(cmd: String) -> Option<Command<'static>> {
-    let possible_commands = search_commands(cmd);
-    if possible_commands.len() == 0 {
+    let possible_commands = search_commands(cmd.clone());
+    if possible_commands.len() == 0 || possible_commands[0].name != cmd {
         None
     } else {
         Some(possible_commands[0])

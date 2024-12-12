@@ -57,6 +57,20 @@ body {
     color: $orange;
 }
 
+
+
+.green {
+    color: rgb(84, 209, 84)
+}
+
+.purple {
+    color: #ac0ee7
+}
+
+.red {
+    color: #de251b
+}
+
 a {
     text-decoration: none;
     color: $orange;
@@ -129,6 +143,14 @@ h2 {
         margin: .5rem;
         position: relative;
         overflow: auto;
+
+        .status {
+            color: #999;
+
+            span {
+                font-weight: bold;
+            }
+        }
 
         .links {
             display: flex;

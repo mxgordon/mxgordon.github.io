@@ -2,6 +2,15 @@ use leptos::*;
 use crate::commands::{search::COMMANDS, typewriter::TypeWriter};
 use levenshtein::levenshtein;
 
+pub fn get_one_cmd_arg(cmd: &String) -> Option<&str> {
+    let mut splits = cmd.split_whitespace();
+
+    if splits.clone().count() != 2 {
+        return None;
+    }
+    
+    splits.nth(1)
+}
 
 pub fn check_cmd_args_empty(cmd: &String) -> bool {
     cmd.split_whitespace().count() == 1
