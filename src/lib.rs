@@ -1,6 +1,8 @@
+use leptos::prelude::AddAnyAttr;
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
+use leptos_router::components::{Route, Router, Routes};
 use pages::img_viewer::ImgViewer;
 
 mod pages;
@@ -17,7 +19,7 @@ pub fn app() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Html lang="en" dir="ltr" attr:data-theme="light"/>
+        <Html {..} lang="en" dir="ltr" attr:data-theme="light"/>
 
         // sets the document title
         <Title text="Max Gordon"/>
@@ -27,10 +29,9 @@ pub fn app() -> impl IntoView {
         <Meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
         <Router>
-            <Routes>
-                <Route path="/" view=Home/>
-                <Route path="/view/:name" view=ImgViewer/>
-                <Route path="/*" view=NotFound/>
+            <Routes fallback=|| view!{ <NotFound/> }>
+                <Route path=path!("/") view=Home/>
+                <Route path=path!("/view/:name") view=ImgViewer/>
             </Routes>
         </Router>
     }

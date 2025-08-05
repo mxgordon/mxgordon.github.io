@@ -1,20 +1,24 @@
 use std::rc::Rc;
 use std::time::Duration;
 use std::{cell::RefCell, fmt::Debug};
-
-use html::{a, div, h2, h3, iframe, img, li, p, span, ul, AnyElement, ToHtmlElement};
+use std::any::Any;
+use html::{a, div, h2, h3, iframe, img, li, p, span, ul};
 use leptos::*;
-
+use leptos::attr::Attribute;
+use leptos::attr::custom::{custom_attribute, CustomAttr};
+use leptos::html::ElementType;
 use leptos::logging::log;
+use leptos::prelude::{create_node_ref, document, set_interval_with_handle, window, AnyView, CustomAttribute, IntoAny, NodeRef};
 use leptos_dom::helpers::IntervalHandle;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
-use web_sys::{Element, Node};
+use wasm_bindgen_test::console_error;
+use web_sys::{Element, HtmlElement, Node};
 
-#[derive(Clone)]
+#[derive()]
 enum TypeElement {
     Text { t: String },
-    Element { e: HtmlElement<AnyElement> },
+    Element { e: AnyView },
     EndElement(),
     StartText(),
     EndText(),
@@ -25,7 +29,7 @@ impl Debug for TypeElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TypeElement::Text { t } => f.write_str(&format!("Text: {}", t)),
-            TypeElement::Element { e } => f.write_str(&format!("Element: {}", e.node_name())),
+            TypeElement::Element { e } => f.write_str(&format!("Element: {:?}", e)),
             TypeElement::EndElement() => f.write_str("EndElement"),
             TypeElement::StartText() => f.write_str("StartText"),
             TypeElement::EndText() => f.write_str("EndText"),
@@ -35,7 +39,7 @@ impl Debug for TypeElement {
 }
 
 fn break_down_html<'a>(
-    html: &HtmlElement<AnyElement>,
+    html: &HtmlElement,
     seq: &'a mut Vec<TypeElement>,
     chunk_sz: usize
 ) -> &'a mut Vec<TypeElement> {
@@ -72,41 +76,61 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>, chunk_sz: usi
 
     let attrs = root_element.get_attribute_names();
 
-    let attrs: Vec<(&'static str, Attribute)> = attrs
-        .iter()
-        .map(|attr| {
-            let name = attr.as_string().unwrap().to_owned();
-            let name_str: &'static str = Box::leak(name.into_boxed_str());
+    // let attrs: Vec<CustomAttr<String, String>> = attrs.iter().map(|attr| {
+    //     let name = attr.as_string().unwrap().to_owned();
+    //     let value = root_element.get_attribute(&name).unwrap();
+    //
+    //     custom_attribute(name, value)
+    // }).collect();
 
-            let value = root_element.get_attribute(&name_str).unwrap();
-            (name_str, Attribute::String(value.into()))
-        })
-        .collect();
+    // let attrs: Vec<(&'static str, Attribute)> = attrs
+    //     .iter()
+    //     .map(|attr| {
+    //         let name = attr.as_string().unwrap().to_owned();
+    //         let name_str: &'static str = Box::leak(name.into_boxed_str());
+    //
+    //         let value = root_element.get_attribute(&name_str).unwrap();
+    //
+    //         // String::AttributeValue(name_str, value);
+    //         (name_str, Attribute::String(value.into()))
+    //     })
+    //     .collect();
 
-    let next_element: Option<HtmlElement<AnyElement>> = match root_name.as_str() {
-        "P" => Some(p().into()),
-        "SPAN" => Some(span().into()),
-        "A" => Some(a().into()),
-        "H2" => Some(h2().into()),
-        "H3" => Some(h3().into()),
-        "UL" => Some(ul().into()),
-        "LI" => Some(li().into()),
-        "IMG" => Some(img().into()),
-        "DIV" => Some(div().into()),
-        "IFRAME" => Some(iframe().into()),
+    let mut next_element: AnyView = match root_name.as_str() {
+        "P" => p().into_any(),
+        "SPAN" => span().into_any(),
+        "A" => a().into_any(),
+        "H2" => h2().into_any(),
+        "H3" => h3().into_any(),
+        "UL" => ul().into_any(),
+        "LI" => li().into_any(),
+        "IMG" => img().into_any(),
+        "DIV" => div().into_any(),
+        "IFRAME" => iframe().into_any(),
         other => {
-            log!("Unknown element: {}", other);
-            None
+            // log!("Unknown element: {}", other);
+            // None
+            console_error!("Unknown element: {}", other);
+            panic!();
         }
     };
 
-    let _ = next_element
-        .clone()
-        .expect(format!("Element: {} should be initialized", root_name.as_str()).as_str())
-        .attrs(attrs);
+    for attr_name in attrs {
+        let name = attr_name.as_string().unwrap().to_owned();
+        let value = root_element.get_attribute(&name).unwrap();
+
+        next_element = next_element.attr(name, value).into_any();
+    }
+
+    // let _ = next_element
+    //     .clone()
+    //     .expect(format!("Element: {} should be initialized", root_name.as_str()).as_str()).at
+        // .attrs(attrs);
+
+    // next_element.unwrap().attr
 
     seq.push(TypeElement::Element {
-        e: next_element.expect("Element should be initialized").into(),
+        e: next_element.into(),
     });
 
     for i in 0..root.child_nodes().length() {
@@ -122,17 +146,20 @@ fn break_down_node<'a>(root: &Node, seq: &'a mut Vec<TypeElement>, chunk_sz: usi
 
 #[component]
 pub fn TypeWriter(
-    #[prop(into)] html_to_type: HtmlElement<AnyElement>,
-    #[prop(default=div().into(), into)] base_element: HtmlElement<AnyElement>,
+    #[prop(into)] html_to_type: HtmlElement,
+    #[prop(default=div().into(), into)] base_element: HtmlElement,
     #[prop(default=20)] delay: u64,
     #[prop(default=Box::new(|| ()))] callback: Box<dyn Fn() + 'static>,
     #[prop(default=6)] chunk_sz: usize,
 ) -> impl IntoView {
-    let container_div_ref = create_node_ref::<AnyElement>();
+    let container_div_ref = NodeRef::new();
 
     let mut charSeq: Vec<TypeElement> = Vec::new();
 
-    break_down_html(&html_to_type.clone(), &mut charSeq, chunk_sz);
+    break_down_html(&html_to_type, &mut charSeq, chunk_sz);
+
+    // base_element.add_event_listener_with_callback_and_add_event_listener_options_and_wants_untrusted()
+    // base_element.on
 
     // let onscroll_closure = Closure::wrap(Box::new(|e: web_sys::Event| { log!("scroll: {:?}", e); }) as Box<dyn FnMut(_)>);
     // document().set_onscroll(Some(onscroll_closure.as_ref().unchecked_ref()));
@@ -144,7 +171,7 @@ pub fn TypeWriter(
             let intervalHandleRef: Rc<RefCell<Option<IntervalHandle>>> =
                 Rc::new(RefCell::new(None));
 
-            let current_element: RefCell<HtmlElement<AnyElement>> = RefCell::new(e.into());
+            let current_element: RefCell<HtmlElement> = RefCell::new(e.into());
             let current_text: RefCell<Option<Node>> = RefCell::new(None);
 
 
@@ -170,11 +197,12 @@ pub fn TypeWriter(
 
                         match next {
                             TypeElement::EndElement() => {
-                                let classes = current_element.clone().class_name();
-                                let _ = current_element.clone().attr("class", classes.replace("typing", ""));
+                                let classes = current_element.class_name();
+                                current_element.set_attribute("class", &classes.replace("typing", "")).unwrap();
 
                                 let parent_node = current_element.parent_element().unwrap();
-                                *current_element = ToHtmlElement::to_leptos_element(&parent_node);
+                                *current_element = parent_node;
+                                    // ToHtmlElement::to_leptos_element(&parent_node);
                             }
                             TypeElement::Text { t } => {
                                 let mut text = current_text
@@ -201,13 +229,13 @@ pub fn TypeWriter(
                                 iter_again = false;
                             }
                             TypeElement::Element { e } => {
-                                let classes = current_element.clone().class_name();
-                                let _ = current_element.clone().attr("class", classes.replace("typing", ""));
+                                let classes = current_element.class_name();
+                                current_element.class_list().remove_1("typing").unwrap();
 
-                                let _ = current_element.append_child(&e);
-                                *current_element = e.clone();
-                                
-                                let _ = current_element.clone().classes("typing");
+                                current_element.append_child(&e).unwrap();
+                                *current_element = e;
+
+                                current_element.class_list().add_1("typing").unwrap();
                             }
                             TypeElement::StartText() => {
                                 let _ = current_element.append_with_str_1("");
@@ -231,5 +259,10 @@ pub fn TypeWriter(
         });
     });
 
-    base_element.node_ref(container_div_ref)
+    // base_element.node_re
+
+    base_element.set_onload(move |e| {print!("loaded");})
+
+    // base_element.n
+        // .node_ref(container_div_ref)
 }

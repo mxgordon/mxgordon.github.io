@@ -1,26 +1,29 @@
-use std::ops::Deref;
+use leptos::prelude::{signal_local, AnyView, ClassAttribute, IntoAny};
+use leptos::prelude::OnAttribute;
+use leptos::prelude::ElementChild;
 use std::rc::Rc;
-
+use std::sync::Arc;
 use ev::Event;
 use ev::KeyboardEvent;
 use ev::SubmitEvent;
 use html::span;
-use html::AnyElement;
-use html::Input;
 use leptos::*;
+use leptos::control_flow::{For, Show};
+use leptos::error::ErrorBoundary;
+use leptos::html::{p, ElementExt, Span};
 use leptos::logging::log;
-use wasm_bindgen::JsCast;
-use web_sys::{HtmlInputElement, Element};
+use leptos::prelude::{event_target_value, signal, CollectView, Get, GlobalAttributes, NodeRef, NodeRefAttribute, ReadSignal, Set, Update, View};
+use web_sys::{HtmlElement, HtmlSpanElement};
 
 use crate::commands::about::*;
 use crate::commands::search::*;
 use crate::commands::typewriter::*;
 use crate::commands::utils::*;
 
-fn make_prompt() -> HtmlElement<html::Span>{
+fn make_prompt() -> AnyView {
     view! {
         <span>"user@mxgordon.com> "</span>
-    }
+    }.into_any()
 }
 
 #[component]
@@ -30,24 +33,24 @@ pub fn PromptInput(
     #[prop()] on_input: Box<dyn Fn(Event) + 'static>,
     #[prop()] on_keydown: Box<dyn Fn(KeyboardEvent) + 'static>,
     #[prop()] autocomplete: ReadSignal<Vec<String>>,
-    #[prop()] autocomplete_onclick: Rc<Box<dyn Fn(&String) + 'static>>,
+    #[prop()] autocomplete_onclick: Arc<Box<dyn Fn(&String) + Send + Sync + 'static>>,
 ) -> impl IntoView {
-    let prompt_ref = create_node_ref::<Input>();
+    let prompt_ref = NodeRef::new();
 
-    prompt_ref.on_load(move |e| {
-        let _ = e.on_mount(move |e2| {
-            e2.focus().unwrap();
-        });
-    });
+    // prompt_ref.on_load(move |e| {
+    //     let _ = e.on_mount(move |e2| {
+    //         e2.focus().unwrap();
+    //     });
+    // });
 
     view! {
         <p class="prompt-line" >{make_prompt()}
             <form on:submit=on_submit>
-                <input ref=prompt_ref type="text" id="prompt" prop:value=prompt_input on:input=on_input on:keydown=on_keydown spellcheck="false" autocomplete="off" aria-autocomplete="none" />
+                <input node_ref=prompt_ref type="text" id="prompt" value=prompt_input on:input=on_input on:keydown=on_keydown /*spellcheck=false autocomplete="off" aria-autocomplete="none" */ />
 
                 <div class="autocomplete-options">
                     <For each=move || autocomplete.get() key=|cmd_str| cmd_str.clone() children=move |cmd| {
-                        let autocomplete_onclick = Rc::clone(&autocomplete_onclick);
+                        let autocomplete_onclick = Arc::clone(&autocomplete_onclick);
                         let cmd_clone = cmd.clone();
                         view!{
                             <p on:click=move |_e| {
@@ -64,12 +67,12 @@ pub fn PromptInput(
 
 #[component]
 pub fn Home() -> impl IntoView {
-    let (promptInput, writePromptInput) = create_signal("".to_string());
-    let (loadingStage, writeLoadingStage) = create_signal(0);
-    let (pastCmdsHtml, writePastCmdsHtml) = create_signal::<Vec<View>>(vec![]);
-    let (pastCmds, writePastCmds) = create_signal::<Vec<String>>(vec!["intro".to_string()]);
-    let (currentPastCmdIdx, writeCurrentPastCmdIdx) = create_signal(-1);
-    let (autocomplete, writeAutoComplete) = create_signal::<Vec<String>>(vec![]);
+    let (promptInput, writePromptInput) = signal("".to_string());
+    let (loadingStage, writeLoadingStage) = signal(0);
+    let (pastCmdsHtml, writePastCmdsHtml) = signal_local::<Vec<AnyView>>(vec![]);
+    let (pastCmds, writePastCmds) = signal::<Vec<String>>(vec!["intro".to_string()]);
+    let (currentPastCmdIdx, writeCurrentPastCmdIdx) = signal(-1);
+    let (autocomplete, writeAutoComplete) = signal::<Vec<String>>(vec![]);
 
     let handleAutocompleteClick = move |cmd: &String| {
         writePromptInput.set(cmd.to_string());
@@ -141,20 +144,20 @@ pub fn Home() -> impl IntoView {
             
             if let Some(command) = potential_command {
                 writePastCmdsHtml.update(|past| {
-                    past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-                    past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
+                    past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_any());
+                    past.push((command.function)(promptInput.get(), Box::new(move || writeLoadingStage.set(2))).into_any());
                 });
             } else {
                 writePastCmdsHtml.update(|past| {
-                    past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-                    past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
+                    past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_any());
+                    past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move || writeLoadingStage.set(2)) />}.into_any());
                 });
             }
             writeLoadingStage.set(1);
 
         } else {                
             writePastCmdsHtml.update(|past| {
-                past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());   
+                past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_any());
             });
 
         }
@@ -187,19 +190,20 @@ pub fn Home() -> impl IntoView {
         }>
             <div id="App">
                 <p class="prompt-line">{make_prompt()}
-                <TypeWriter html_to_type=s base_element=span() delay=200 chunk_sz=1 callback=Box::new(move ||(writeLoadingStage.set(1))) /></p>
+                    <TypeWriter html_to_type=s base_element=span() delay=200 chunk_sz=1 callback=Box::new(move ||(writeLoadingStage.set(1))) />
+                </p>
 
-                <Show when=move || (loadingStage.get() > 0)>
-                    <Intro cmd="intro".to_string() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />
-                </Show>
-
-                {move || {log!("{:?}", pastCmdsHtml.get()); pastCmdsHtml}}
-                // {move || {pastCmdsHtml.get()}}
-                // {pastCmdsHtml}
-
-                <Show when=move || (loadingStage.get() > 1)>
-                    <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) on_keydown=Box::new(handleKeyDown) autocomplete=autocomplete autocomplete_onclick=Rc::new(Box::new(handleAutocompleteClick)) />
-                </Show>
+                // <Show when=move || (loadingStage.get() > 0)>
+                //     <Intro cmd="intro".to_string() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />
+                // </Show>
+                //
+                // {move || {log!("{:?}", pastCmdsHtml.get()); pastCmdsHtml}}
+                // // {move || {pastCmdsHtml.get()}}
+                // // {pastCmdsHtml}
+                //
+                // <Show when=move || (loadingStage.get() > 1)>
+                //     <PromptInput prompt_input=promptInput on_submit=Box::new(handleSubmit) on_input=Box::new(handleInput) on_keydown=Box::new(handleKeyDown) autocomplete=autocomplete autocomplete_onclick=Rc::new(Box::new(handleAutocompleteClick)) />
+                // </Show>
             </div>
         </ErrorBoundary>
     }
