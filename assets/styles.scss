@@ -1,7 +1,7 @@
 $orange: #f57e20;
 $yellow: #f6d434;
 
-html, body, #App {
+html, body, #main, #App {
     height: 100%;
     width: 100%;
     margin: 0;
@@ -222,7 +222,7 @@ p#input {
     }
 }
 
-.typing::after {
+.cursor::after {
     content: "";
     display: inline-block;
     width: 0.5rem;
@@ -236,4 +236,11 @@ p#input {
     white-space: pre-wrap;
     margin: 0;
     width: max-content;
+    * {
+        margin: inherit;
+    }
+}
+
+.will-type {
+    display: none;
 }
