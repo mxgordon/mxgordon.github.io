@@ -1,10 +1,14 @@
-use std::ops::Deref;
+use std::cell::RefCell;
 use std::rc::Rc;
-use dioxus::html::completions::CompleteWithBraces::template;
-use dioxus::logger::tracing;
+use std::time::Duration;
+use async_std::prelude::StreamExt;
+use async_std::task;
+use dioxus::logger::tracing::info;
 use dioxus::prelude::*;
-use crate::commands::gallery::gallery_html;
-use crate::commands::intro::intro_html;
+use dioxus_sdk::utils::timing::use_debounce;
+use crate::commands::intro::Intro;
+use crate::commands::typewriter::TypewriterState;
+use crate::commands::utils::{get_command, search_commands, CommandNotFound, CommandProps};
 
 #[component]
 fn Prompt() -> Element {
@@ -18,162 +22,175 @@ fn Prompt() -> Element {
 #[derive(PartialEq, Props, Clone)]
 pub struct PromptInputProps {
     prompt_input: String,
-    on_submit: fn(),
-    on_input: fn(Event<FormData>),
-    on_keydown: fn(Event<KeyboardData>),
-    autocomplete: Vec<String>,
-    autocomplete_onclick: fn(&String),
+    on_submit: Callback<Event<FormData>>,
+    on_input: Callback<Event<FormData>>,
+    on_keydown: Callback<Event<KeyboardData>>,
+    auto_complete: Signal<Vec<String>>,
+    auto_complete_onclick: Callback<String>,
 }
 
 #[allow(non_snake_case)]
 pub fn PromptInput(props: PromptInputProps) -> Element {
-    // let prompt_ref = create_node_ref::<Input>();
-
-    // prompt_ref.on_load(move |e| {
-    //     let _ = e.on_mount(move |e2| {
-    //         e2.focus().unwrap();
-    //     });
-    // });
     rsx! {
         p {
             class: "prompt-line",
             Prompt {}
-            input {
-                r#type: "text",
-                id: "prompt",
-                value: props.prompt_input,
-                oninput: props.on_input,
-                onkeydown: props.on_keydown,
-                spellcheck: "false",
-                autocomplete: "off",
-                aria_autocomplete: "none",
-                // ref: prompt_ref,
+            form {
+                onsubmit: props.on_submit,
+                input {
+                    r#type: "text",
+                    id: "prompt",
+                    value: props.prompt_input,
+                    oninput: props.on_input,
+                    onkeydown: props.on_keydown,
+                    spellcheck: "false",
+                    autocomplete: "off",
+                    aria_autocomplete: "none",
+                    onmounted: |e| async move {e.set_focus(true).await.expect("TODO: panic message");},
+                }
+
+                div {
+                    class: "autocomplete-options",
+                    for auto_complete_option in props.auto_complete.read().clone() {
+                        p {
+                            onclick: move |_| {props.auto_complete_onclick.call(auto_complete_option.clone())},
+                            {auto_complete_option.clone()}
+                        }
+                    }
+                }
             }
         }
     }
-    
+}
+
+#[component]
+fn IntroCommand() -> Element {
+    let mut t = TypewriterState::new_with_delay(200);
+
+    let rtn = rsx! {
+        span {
+            {t.t("intro")}
+        }
+    };
+
+    t.set_on_finished_callback();
+
+    rtn
 }
 
 #[component]
 pub fn Home() -> Element {
-    let prompt_input = use_signal(String::new);
-    let loading_stage = use_signal(|| 1);
+    let mut prompt_input = use_signal(String::new);
+    let mut loading_stage = use_signal(|| 0);
     let mut past_cmds_html = use_signal(Vec::<Element>::new);
-    let past_cmds = use_signal(|| vec!["intro".to_string()]);
-    let current_past_cmd_idx = use_signal(|| -1);
-    let auto_complete = use_signal(Vec::<String>::new);
+    let mut past_cmds = use_signal(|| vec!["intro".to_string()]);
+    let mut current_past_cmd_idx = use_signal(|| -1);
+    let mut auto_complete = use_signal(Vec::<String>::new);
 
-    // let handleAutocompleteClick = move |cmd: &String| {
-    //     writePromptInput.set(cmd.to_string());
-    //     writeAutoComplete.set(search_commands(promptInput.get()).iter().map(|c| c.name.to_string()).collect());
-    // };
+    let handle_autocomplete_click = move |cmd: String| {
+        prompt_input.set(cmd.to_string());
+        auto_complete.set(search_commands(&prompt_input.peek()).iter().map(|c| c.name.to_string()).collect());
+    };
 
-    // let handleKeyDown = move |e: KeyboardEvent| {
-    //     let key = e.key();
-    //
-    //     match key.as_str() {
-    //         "Tab" => {
-    //             e.prevent_default();
-    //
-    //             let new_value = promptInput.get();
-    //             let potential_commands = search_commands(new_value);
-    //
-    //             if potential_commands.len() >= 1 {
-    //                 writePromptInput.set(potential_commands[0].name.to_string());
-    //             }
-    //         },
-    //         "ArrowUp" => {
-    //             e.prevent_default();
-    //             let next_idx = currentPastCmdIdx.get() + 1;
-    //
-    //             log!("{:?} {}", next_idx, currentPastCmdIdx.get());
-    //
-    //             if next_idx < pastCmds.get().len() as i32 {
-    //                 log!("{:?} {} {}", next_idx, currentPastCmdIdx.get(), pastCmds.get().len());
-    //                 writeCurrentPastCmdIdx.set(next_idx);
-    //                 writePromptInput.set(pastCmds.get()[next_idx as usize].to_string());
-    //             }
-    //         },
-    //         "ArrowDown" => {
-    //             e.prevent_default();
-    //             let next_idx = currentPastCmdIdx.get() - 1;
-    //             match next_idx {
-    //                 -2 => {},
-    //                 -1 => {
-    //                     writeCurrentPastCmdIdx.set(next_idx);
-    //                     writePromptInput.set("".to_string())
-    //                 },
-    //                 next_idx => {
-    //                     writeCurrentPastCmdIdx.set(next_idx);
-    //                     writePromptInput.set(pastCmds.get()[next_idx as usize].to_string());
-    //                 }
-    //             }
-    //         },
-    //         _ => {return;}
-    //     }
-    //
-    //     writeAutoComplete.set(search_commands(promptInput.get()).iter().map(|c| c.name.to_string()).collect());
-    // };
+    let handle_key_down = move |e: Event<KeyboardData>| {
+        match e.key() {
+            Key::Tab => {
+                e.prevent_default();
 
-    // let handleInput = move |e: Event| {
-    //     writePromptInput.set(event_target_value(&e));
-    //     let new_value = promptInput.get();
-    //
-    //     writeAutoComplete.set(search_commands(new_value).iter().map(|c| c.name.to_string()).collect());
-    // };
+                let new_value = prompt_input.peek().clone();
+                let potential_commands = search_commands(&new_value);
 
-    // let handleSubmit = move |e: SubmitEvent| {
-    //     e.prevent_default();
-    //     let input = promptInput.get();
-    //     let mut cmd_splits = input.split_whitespace();
-    //
-    //     if let Some(cmd) = cmd_splits.next() {
-    //
-    //         let potential_command = get_command(cmd.to_string());
-    //
-    //         if let Some(command) = potential_command {
-    //             writePastCmdsHtml.update(|past| {
-    //                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-    //                 past.push((command.function)(promptInput.get(), Box::new(move ||(writeLoadingStage.set(2)))).into_view());
-    //             });
-    //         } else {
-    //             writePastCmdsHtml.update(|past| {
-    //                 past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-    //                 past.push(view! {<CommandNotFound cmd=promptInput.get() on_finished=Box::new(move ||(writeLoadingStage.set(2))) />}.into_view());
-    //             });
-    //         }
-    //         writeLoadingStage.set(1);
-    //
-    //     } else {
-    //         writePastCmdsHtml.update(|past| {
-    //             past.push(view! {<p class="prompt-line">{make_prompt()}{promptInput.get()}</p>}.into_view());
-    //         });
-    //
-    //     }
-    //     writePastCmds.update(|past| {
-    //         past.insert(0, promptInput.get());
-    //     });
-    //     writePromptInput.set("".to_string());
-    //     writeAutoComplete.set(vec![]);
-    //     writeCurrentPastCmdIdx.set(-1);
-    // };
+                if !potential_commands.is_empty() {
+                    prompt_input.set(potential_commands[0].name.to_string());
+                }
+            },
+            Key::ArrowUp => {
+                e.prevent_default();
+                let next_idx = *current_past_cmd_idx.peek() + 1;
 
-    let intro_cmd = rsx! {
-        span {
-            "intro"
+                info!("{:?} {}", next_idx, current_past_cmd_idx.peek());
+
+                if next_idx < past_cmds.len() as i32 {
+                    info!("{:?} {} {}", next_idx, current_past_cmd_idx.peek(), past_cmds.len());
+                    current_past_cmd_idx.set(next_idx);
+                    prompt_input.set(past_cmds.get(next_idx as usize).expect("Index out of bounds").to_string());
+                }
+            },
+            Key::ArrowDown => {
+                e.prevent_default();
+                let next_idx = *current_past_cmd_idx.peek() - 1;
+                match next_idx {
+                    -2 => {},
+                    -1 => {
+                        current_past_cmd_idx.set(next_idx);
+                        prompt_input.set("".to_string())
+                    },
+                    next_idx => {
+                        current_past_cmd_idx.set(next_idx);
+                        prompt_input.set(past_cmds.get(next_idx as usize).expect("Index out of range").to_string());
+                    }
+                }
+            },
+            _ => {return;}
         }
-    }.unwrap();
-    //
-    // // intro_cmp
-    //
-    // let a = rsx!{p {class: "balls", div{id: "breh",}}}.unwrap();
-    //
-    // for root in a.template.roots {
-    //     tracing::info!("{:?}", root);
-    // }
 
-    // past_cmds_html.set(past_cmds_html.get().unwrap())
-    // past_cmds_html.push(rsx! {gallery_html {} });
+        auto_complete.set(search_commands(&prompt_input.peek()).iter().map(|c| c.name.to_string()).collect());
+    };
+
+    let handle_input = move |e: Event<FormData>| {
+        prompt_input.set(e.value());
+        let new_value = prompt_input.peek();
+
+        auto_complete.set(search_commands(&new_value).iter().map(|c| c.name.to_string()).collect());
+    };
+
+    let handle_submit = move |e: Event<FormData>| {
+        e.prevent_default();
+        let input = prompt_input.peek().clone();
+        let mut cmd_splits = input.split_whitespace();
+
+        if let Some(cmd) = cmd_splits.next() {
+
+            let potential_command = get_command(cmd);
+
+            if let Some(command) = potential_command {
+                past_cmds_html.with_mut(|past| {
+                    past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
+                    past.push(
+                        (command.function)(CommandProps::new(prompt_input.peek().clone())))//, Callback::new(move |_| loading_stage.set(2)))))
+                });
+            } else {
+                past_cmds_html.with_mut(|past| {
+                    past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
+                    past.push(rsx! {
+                        CommandNotFound {cmd: prompt_input.peek().clone()}//, on_finished: move || loading_stage.set(2), typewriter_state: TypewriterState::new()}
+
+                    });
+                });
+            }
+            loading_stage.set(1);
+
+        } else {
+            past_cmds_html.with_mut(|past| {
+                past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
+            });
+
+        }
+        past_cmds.with_mut(|past| {
+            past.insert(0, prompt_input.peek().clone());
+        });
+        prompt_input.set("".to_string());
+        auto_complete.set(vec![]);
+        current_past_cmd_idx.set(-1);
+    };
+
+    let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<u64>| async move {
+        while let Some(delay) = rx.next().await {
+            info!("start sleep {delay}ms");
+            task::sleep(Duration::from_millis(delay)).await;
+            loading_stage.with_mut(|stage| *stage += 1);
+        }
+    });
 
     rsx! {
         div {
@@ -181,25 +198,23 @@ pub fn Home() -> Element {
             p {
                 class: "prompt-line",
                 Prompt {}
-                {intro_cmd}
+                IntroCommand {}//on_finished: move || loading_stage.clone().set(1)}
             }
             if *loading_stage.read() > 0 {
-                // "<INTRO COMMAND>"
-                intro_html {}
+                Intro { cmd: "intro"}//, on_finished: move || loading_stage.clone().set(2), typewriter_state: TypewriterState::new() }
             }
             {past_cmds_html.read().iter()}
 
             if *loading_stage.read() > 1 {
                 PromptInput {
-                    prompt_input: "input",
-                    on_submit: || tracing::info!("submitting..."),
-                    on_input: |event| tracing::info!("input: {}", event.data().value()),
-                    on_keydown: |event| tracing::info!("keydown: {}", event.data().key()),
-                    autocomplete: vec!["testing".to_string()],
-                    autocomplete_onclick: |autocomplete| tracing::info!("autocomplete: {}", autocomplete)
+                    prompt_input: {prompt_input},
+                    on_submit:  handle_submit,
+                    on_input: handle_input,
+                    on_keydown: handle_key_down,
+                    auto_complete: auto_complete,
+                    auto_complete_onclick: handle_autocomplete_click,
                 }
             }
-
         }
     }
 }

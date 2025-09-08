@@ -1,4 +1,4 @@
 pub mod gallery;
-mod typewriter;
-mod utils;
+pub mod typewriter;
+pub mod utils;
 pub mod intro;

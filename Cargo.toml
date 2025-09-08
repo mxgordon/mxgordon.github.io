@@ -10,6 +10,7 @@ edition = "2021"
 dioxus = { version = "0.6.3", features = ["router"] }
 levenshtein = "1.0.5"
 dioxus-sdk = { version = "0.6", features = ["timing"] }
+async-std = "1.13.2"
 
 [features]
 default = ["web"]

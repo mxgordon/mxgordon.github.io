@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use levenshtein::levenshtein;
-use crate::commands::gallery::{gallery_html, Gallery};
+use crate::commands::gallery::{Gallery};
+use crate::commands::intro::Intro;
+use crate::commands::typewriter::TypewriterState;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Command<'a> {
@@ -10,13 +12,13 @@ pub struct Command<'a> {
     pub function: fn(CommandProps) -> Element,
 }
 
-pub static COMMANDS: [Command; 1] = [
-    // Command {
-    //     name: "intro",
-    //     syntax: "intro",
-    //     description: "The introduction to my website.",
-    //     function: |cmd, on_finished,| view! { <Intro cmd={cmd} on_finished=on_finished/>},
-    // },
+pub static COMMANDS: [Command; 2] = [
+    Command {
+        name: "intro",
+        syntax: "intro",
+        description: "The introduction to my website.",
+        function: Intro,
+    },
     // Command {
     //     name: "about",
     //     syntax: "about",
@@ -25,7 +27,7 @@ pub static COMMANDS: [Command; 1] = [
     // },
     Command {
         name: "gallery",
-        syntax: "gallery",
+        syntax: "gallery <image>",
         description: "My personal gallery of film photography! ",
         function: Gallery,
     },
@@ -44,6 +46,28 @@ pub static COMMANDS: [Command; 1] = [
 
 ];
 
+pub fn search_commands(cmd: &str) -> Vec<Command<'static>> {
+    if cmd.is_empty() {
+        return vec![];
+    }
+
+    let cmd_name = cmd.split_whitespace().next().unwrap_or_default();
+    COMMANDS
+        .iter()
+        .filter(|c| c.name.starts_with(cmd_name))
+        .cloned()
+        .collect()
+}
+
+pub fn get_command(cmd: &str) -> Option<Command<'static>> {
+    let possible_commands = search_commands(cmd);
+    if possible_commands.is_empty() || possible_commands[0].name != cmd {
+        None
+    } else {
+        Some(possible_commands[0])
+    }
+}
+
 pub fn get_one_cmd_arg(cmd: &String) -> Option<&str> {
     let mut splits = cmd.split_whitespace();
 
@@ -54,34 +78,52 @@ pub fn get_one_cmd_arg(cmd: &String) -> Option<&str> {
     splits.nth(1)
 }
 
-pub fn check_cmd_args_empty(cmd: &String) -> bool {
+pub fn check_cmd_args_empty(cmd: &str) -> bool {
     cmd.split_whitespace().count() == 1
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Props)]
 pub struct CommandProps {
-    cmd: String,
-    on_finished: fn(),
+    pub cmd: String,
+    // pub on_finished: Callback,
+    // pub prompt_show: Coroutine<(u64, (), ())>,
+    #[props(default=TypewriterState::new())]
+    pub typewriter_state: TypewriterState
+}
+
+impl CommandProps {
+    // pub fn new(cmd: String, on_finished: Callback) -> Self {
+    //     Self { cmd, on_finished, typewriter_state: TypewriterState::new() }
+    // }
+    pub fn new(cmd: String) -> Self {
+        Self { cmd, typewriter_state: TypewriterState::new() }
+    }
+
+    pub fn new_no_typewriter_effect(cmd: String) -> Self {
+        Self { cmd, typewriter_state: TypewriterState::new_no_typewriter_effect() }
+    }
 }
 
 #[component]
 pub fn CommandNotFound(props: CommandProps) -> Element {
-    let cmd_name = props.cmd.split_ascii_whitespace().next().unwrap_or_default().to_string().to_lowercase();
-    let suggestion = COMMANDS.iter().map(|c| (c.name, levenshtein(&props.cmd, c.name))).fold(("", usize::MAX), |prev, next| {
+    let cmd_name = props.cmd.split_ascii_whitespace().next().unwrap_or_default().to_string();
+    let suggestion = COMMANDS.iter().map(|c| (c.name, levenshtein(&cmd_name, c.name))).fold(("", usize::MAX), |prev, next| {
         if next.1 < prev.1 { next } else { prev }
     });
 
-    rsx! {
-        p {
-            {cmd_name}": command not found. Did you mean: `"
-            span { class: "orange", {suggestion.0}}
-            "`?"
-        }
-    }
+    let mut t = props.typewriter_state;
 
-    // view! {
-    //     <TypeWriter html_to_type=view!{<p>{cmd_name}": command not found. Did you mean: `"<span class="orange">{suggestion.0}</span>"`?"</p>} callback=on_finished />
-    // }
+    let rtn = rsx! {
+        p {
+            {t.t(&cmd_name)}{t.t(": command not found. Did you mean: `")}
+            span { class: "orange", {t.t(suggestion.0)}}
+            {t.t("`?")}
+        }
+    };
+
+    t.set_on_finished_callback();
+
+    rtn
 }
 
 #[component]
@@ -91,7 +133,4 @@ pub fn InvalidOption(props: CommandProps) -> Element {
             {props.cmd}": invalid option"
         }   
     }
-    // view! {
-    //     <TypeWriter html_to_type=view!{<p>{cmd}": invalid option"</p>} callback=on_finished />
-    // }
 }

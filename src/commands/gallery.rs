@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use crate::commands::utils::CommandProps;
 
 #[derive(Clone, Props, PartialEq)]
-struct GalleryImageProps {
+pub struct GalleryImageProps {
     gallery_entry: GalleryEntry,
 }
 
@@ -95,18 +95,10 @@ pub const GALLERY: [GalleryEntry; 9] = [
 pub fn gallery_html() -> Element {
     rsx!(
         div {
-            h2 {
-                "My Gallery"
-            }
-            p {
-                "I enjoy shooting film photography in my freetime. I mainly shoot in color, but occasionally I'll shoot in black & white, as its easier to enlarge and such. Most of these photos were shot on my Minolta XG-9."
-            }
-            p {
-                "Keep in mind, these are all unedited, straight off the scanner! Additionally, there's a little bit of x-ray damage from airport security."
-            }
-            p {
-                "Here are some of my favorite shots!"
-            }
+            h2 { "My Gallery" }
+            p { "I enjoy shooting film photography in my freetime. I mainly shoot in color, but occasionally I'll shoot in black & white, as its easier to enlarge and such. Most of these photos were shot on my Minolta XG-9." }
+            p { "Keep in mind, these are all unedited, straight off the scanner! Additionally, there's a little bit of x-ray damage from airport security." }
+            p { "Here are some of my favorite shots!" }
             div {
                 class: "gallery",
                 for gallery_entry in GALLERY.iter() {
@@ -117,22 +109,6 @@ pub fn gallery_html() -> Element {
             }
         }
     )
-
-    // view! {
-    //     <div>
-    //         <h2>"My Gallery"</h2>
-    //         <p>"I enjoy shooting film photography in my freetime. I mainly shoot in color, but occasionally I'll shoot in black & white, as its easier to enlarge and such. Most of these photos were shot on my Minolta XG-9."</p>
-    //         <p>"Keep in mind, these are all unedited, straight off the scanner! Additionally, there's a little bit of x-ray damage from airport security."</p>
-    //         <p>"Here are some of my favorite shots!"</p>
-    //         <div class="gallery">
-    //             <For each=move || get_gallery().into_iter() key=|entry| entry.name.to_string() children=move |entry| {
-    //                 view! {
-    //                     <GalleryImage gallery_entry=entry />
-    //                 }
-    //             } />
-    //         </div>
-    //     </div>
-    // }
 }
 
 #[component]
