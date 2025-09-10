@@ -157,13 +157,13 @@ pub fn Home() -> Element {
                 past_cmds_html.with_mut(|past| {
                     past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
                     past.push(
-                        (command.function)(CommandProps::new(prompt_input.peek().clone())))//, Callback::new(move |_| loading_stage.set(2)))))
+                        (command.function)(CommandProps::new(prompt_input.peek().clone())))
                 });
             } else {
                 past_cmds_html.with_mut(|past| {
                     past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
                     past.push(rsx! {
-                        CommandNotFound {cmd: prompt_input.peek().clone()}//, on_finished: move || loading_stage.set(2), typewriter_state: TypewriterState::new()}
+                        CommandNotFound {cmd: prompt_input.peek().clone()}
 
                     });
                 });
@@ -198,10 +198,10 @@ pub fn Home() -> Element {
             p {
                 class: "prompt-line",
                 Prompt {}
-                IntroCommand {}//on_finished: move || loading_stage.clone().set(1)}
+                IntroCommand {}
             }
             if *loading_stage.read() > 0 {
-                Intro { cmd: "intro"}//, on_finished: move || loading_stage.clone().set(2), typewriter_state: TypewriterState::new() }
+                Intro { cmd: "intro"}
             }
             {past_cmds_html.read().iter()}
 

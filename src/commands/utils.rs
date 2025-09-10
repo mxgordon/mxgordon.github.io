@@ -85,22 +85,13 @@ pub fn check_cmd_args_empty(cmd: &str) -> bool {
 #[derive(Clone, PartialEq, Props)]
 pub struct CommandProps {
     pub cmd: String,
-    // pub on_finished: Callback,
-    // pub prompt_show: Coroutine<(u64, (), ())>,
     #[props(default=TypewriterState::new())]
     pub typewriter_state: TypewriterState
 }
 
 impl CommandProps {
-    // pub fn new(cmd: String, on_finished: Callback) -> Self {
-    //     Self { cmd, on_finished, typewriter_state: TypewriterState::new() }
-    // }
     pub fn new(cmd: String) -> Self {
         Self { cmd, typewriter_state: TypewriterState::new() }
-    }
-
-    pub fn new_no_typewriter_effect(cmd: String) -> Self {
-        Self { cmd, typewriter_state: TypewriterState::new_no_typewriter_effect() }
     }
 }
 
