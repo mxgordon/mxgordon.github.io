@@ -1,18 +1,21 @@
 use dioxus::prelude::*;
-use crate::commands::utils::CommandProps;
+use crate::commands::typewriter::TypewriterState;
+use crate::commands::utils::{check_cmd_args_empty, CommandProps, InvalidOption};
 
 #[derive(Clone, Props, PartialEq)]
 pub struct GalleryImageProps {
-    gallery_entry: GalleryEntry,
+    pub cmd: String,
+    pub typewriter_state: TypewriterState,
+    pub gallery_entry: GalleryEntry,
 }
 
-#[allow(non_snake_case)]
+#[component]
 pub fn GalleryImage(props: GalleryImageProps) -> Element {
+    let t = props.typewriter_state;
     let mut ending = props.gallery_entry.src.split("/").collect::<Vec<&str>>();
     let len = ending.len();
 
     let last_two = ending.split_off(len - 2);
-
 
     let src = format!("https://mxgordon.com/cdn-cgi/image/format=webp,height=768/img/{}", last_two.join("/"));
 
@@ -23,13 +26,14 @@ pub fn GalleryImage(props: GalleryImageProps) -> Element {
                 href: format!("/view/{}", props.gallery_entry.name),
                 target: "_blank",
                 rel: "noopener noreferrer",
-                img {
-                    src: src,
-                    alt: props.gallery_entry.description,
-                }
+                {t.image_alt_loc(&src, props.gallery_entry.description)}
+                // img {
+                //     src: src,
+                //     alt: props.gallery_entry.description,
+                // }
             }
             p {
-                {props.gallery_entry.description},
+                {t.t(props.gallery_entry.description)},
             }
         }
     )
@@ -43,7 +47,7 @@ pub struct GalleryEntry {
 }
 
 pub const GALLERY: [GalleryEntry; 9] = [
-        GalleryEntry {
+    GalleryEntry {
         name: "beach_sunset",
         src: "https://res.cloudinary.com/dtz40humd/image/upload/v1730920374/img2_003_result_ajtqzg.jpg",
         description: "The sunset behind Nags Head beach, Outer Banks, NC.",
@@ -90,38 +94,38 @@ pub const GALLERY: [GalleryEntry; 9] = [
     },
 ];
 
-
 #[component]
-pub fn gallery_html() -> Element {
-    rsx!(
+pub fn Gallery(props: CommandProps) -> Element {
+    if !check_cmd_args_empty(&props.cmd) {
+        return rsx! {
+            InvalidOption {
+                ..props
+            }
+        }
+    }
+
+    let t = props.typewriter_state;
+
+    let rtn = rsx! {
         div {
-            h2 { "My Gallery" }
-            p { "I enjoy shooting film photography in my freetime. I mainly shoot in color, but occasionally I'll shoot in black & white, as its easier to enlarge and such. Most of these photos were shot on my Minolta XG-9." }
-            p { "Keep in mind, these are all unedited, straight off the scanner! Additionally, there's a little bit of x-ray damage from airport security." }
-            p { "Here are some of my favorite shots!" }
+            h2 { {t.t("My Gallery")} }
+            p { {t.t("I enjoy shooting film photography in my freetime. I mainly shoot in color, but occasionally I'll shoot in black & white, as its easier to enlarge and such. Most of these photos were shot on my Minolta XG-9.")} }
+            p { {t.t("Keep in mind, these are all unedited, straight off the scanner! Additionally, there's a little bit of x-ray damage from airport security.")} }
+            p { {t.t("Here are some of my favorite shots!")} }
             div {
                 class: "gallery",
                 for gallery_entry in GALLERY.iter() {
                     GalleryImage {
+                        cmd: props.cmd.clone(),
+                        typewriter_state: t.clone(),
                         gallery_entry: gallery_entry.clone(),
                     }
                 }
             }
         }
-    )
-}
+    };
 
-#[component]
-pub fn Gallery(props: CommandProps) -> Element {
-    //     if !check_cmd_args_empty(&cmd) {
-    //         return view! {
-    //             <InvalidOption cmd=cmd on_finished=on_finished />
-    //         }
-    //     }
-    //
-    //     view! {
-    //         <TypeWriter html_to_type=gallery_html() callback=on_finished />
-    //     }
-    // }
-    rsx!{gallery_html{}}
+    t.set_on_finished_callback();
+
+    rtn
 }

@@ -1,11 +1,8 @@
-use std::cell::RefCell;
-use std::rc::Rc;
 use std::time::Duration;
 use async_std::prelude::StreamExt;
 use async_std::task;
 use dioxus::logger::tracing::info;
 use dioxus::prelude::*;
-use dioxus_sdk::utils::timing::use_debounce;
 use crate::commands::intro::Intro;
 use crate::commands::typewriter::TypewriterState;
 use crate::commands::utils::{get_command, search_commands, CommandNotFound, CommandProps};
@@ -65,7 +62,7 @@ pub fn PromptInput(props: PromptInputProps) -> Element {
 
 #[component]
 fn IntroCommand() -> Element {
-    let mut t = TypewriterState::new_with_delay(200);
+    let t = TypewriterState::new_with_delay(200);
 
     let rtn = rsx! {
         span {
@@ -163,7 +160,7 @@ pub fn Home() -> Element {
                 past_cmds_html.with_mut(|past| {
                     past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
                     past.push(rsx! {
-                        CommandNotFound {cmd: prompt_input.peek().clone()}
+                        CommandNotFound {cmd: prompt_input.peek().clone(), typewriter_state: TypewriterState::new()}
 
                     });
                 });
@@ -186,7 +183,6 @@ pub fn Home() -> Element {
 
     let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<u64>| async move {
         while let Some(delay) = rx.next().await {
-            info!("start sleep {delay}ms");
             task::sleep(Duration::from_millis(delay)).await;
             loading_stage.with_mut(|stage| *stage += 1);
         }
@@ -201,7 +197,7 @@ pub fn Home() -> Element {
                 IntroCommand {}
             }
             if *loading_stage.read() > 0 {
-                Intro { cmd: "intro"}
+                Intro { cmd: "intro", typewriter_state: TypewriterState::new()}
             }
             {past_cmds_html.read().iter()}
 

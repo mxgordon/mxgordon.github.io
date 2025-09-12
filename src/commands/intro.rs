@@ -1,9 +1,17 @@
 use dioxus::prelude::*;
-use crate::commands::utils::CommandProps;
+use crate::commands::utils::{check_cmd_args_empty, CommandProps, InvalidOption};
 
 #[component]
 pub fn Intro(props: CommandProps) -> Element {
-    let mut t = props.typewriter_state;
+    if !check_cmd_args_empty(&props.cmd) {
+        return rsx! {
+            InvalidOption {
+                ..props
+            }
+        }
+    }
+
+    let t = props.typewriter_state;
 
     let rtn = rsx!{
         p { class: "typing-parent",

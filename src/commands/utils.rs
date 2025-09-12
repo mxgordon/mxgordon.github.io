@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use levenshtein::levenshtein;
+use crate::commands::about::About;
 use crate::commands::gallery::{Gallery};
 use crate::commands::intro::Intro;
 use crate::commands::typewriter::TypewriterState;
@@ -12,19 +13,19 @@ pub struct Command<'a> {
     pub function: fn(CommandProps) -> Element,
 }
 
-pub static COMMANDS: [Command; 2] = [
+pub static COMMANDS: [Command; 3] = [
     Command {
         name: "intro",
         syntax: "intro",
         description: "The introduction to my website.",
         function: Intro,
     },
-    // Command {
-    //     name: "about",
-    //     syntax: "about",
-    //     description: "The 'about me' section; come learn more about my career, my hobbies, and my webste!",
-    //     function: |cmd, on_finished,| view! { <About cmd={cmd} on_finished=on_finished/>},
-    // },
+    Command {
+        name: "about",
+        syntax: "about",
+        description: "The 'about me' section; come learn more about my career, my hobbies, and my webste!",
+        function: About,
+    },
     Command {
         name: "gallery",
         syntax: "gallery <image>",
@@ -85,7 +86,7 @@ pub fn check_cmd_args_empty(cmd: &str) -> bool {
 #[derive(Clone, PartialEq, Props)]
 pub struct CommandProps {
     pub cmd: String,
-    #[props(default=TypewriterState::new())]
+    // #[props(default=TypewriterState::new())]
     pub typewriter_state: TypewriterState
 }
 
@@ -102,7 +103,7 @@ pub fn CommandNotFound(props: CommandProps) -> Element {
         if next.1 < prev.1 { next } else { prev }
     });
 
-    let mut t = props.typewriter_state;
+    let t = props.typewriter_state;
 
     let rtn = rsx! {
         p {
@@ -119,9 +120,12 @@ pub fn CommandNotFound(props: CommandProps) -> Element {
 
 #[component]
 pub fn InvalidOption(props: CommandProps) -> Element {
-    rsx! {
+    let t = props.typewriter_state;
+    let rtn = rsx! {
         p {
-            {props.cmd}": invalid option"
+            {t.t(&props.cmd)}{t.t(": invalid option")}
         }   
-    }
+    };
+    t.set_on_finished_callback();
+    rtn
 }
