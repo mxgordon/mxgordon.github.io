@@ -91,8 +91,8 @@ pub struct CommandProps {
 }
 
 impl CommandProps {
-    pub fn new(cmd: String) -> Self {
-        Self { cmd, typewriter_state: TypewriterState::new() }
+    pub fn new(cmd: String, cmd_number: i32) -> Self {
+        Self { cmd, typewriter_state: TypewriterState::new(cmd_number) }
     }
 }
 
@@ -113,7 +113,7 @@ pub fn CommandNotFound(props: CommandProps) -> Element {
         }
     };
 
-    t.set_on_finished_callback();
+    t.finish();
 
     rtn
 }
@@ -126,6 +126,6 @@ pub fn InvalidOption(props: CommandProps) -> Element {
             {t.t(&props.cmd)}{t.t(": invalid option")}
         }   
     };
-    t.set_on_finished_callback();
+    t.finish();
     rtn
 }

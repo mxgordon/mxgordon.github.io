@@ -61,7 +61,7 @@ pub fn About(props: CommandProps) -> Element {
 
     };
 
-    t.set_on_finished_callback();
+    t.finish();
 
     rtn
 }

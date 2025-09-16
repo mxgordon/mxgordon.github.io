@@ -1,8 +1,9 @@
+use dioxus::logger::tracing::info;
 use dioxus::prelude::*;
 use crate::commands::typewriter::TypewriterState;
 use crate::commands::utils::{check_cmd_args_empty, CommandProps, InvalidOption};
 
-#[derive(Clone, Props, PartialEq)]
+#[derive(Clone, Props, PartialEq, Debug)]
 pub struct GalleryImageProps {
     pub cmd: String,
     pub typewriter_state: TypewriterState,
@@ -11,6 +12,7 @@ pub struct GalleryImageProps {
 
 #[component]
 pub fn GalleryImage(props: GalleryImageProps) -> Element {
+    // info!("props {:?}", props);
     let t = props.typewriter_state;
     let mut ending = props.gallery_entry.src.split("/").collect::<Vec<&str>>();
     let len = ending.len();
@@ -19,7 +21,9 @@ pub fn GalleryImage(props: GalleryImageProps) -> Element {
 
     let src = format!("https://mxgordon.com/cdn-cgi/image/format=webp,height=768/img/{}", last_two.join("/"));
 
-    rsx!(
+    info!("{:?}",t);
+
+    let rtn = rsx!(
         div {
             class: "gallery-item",
             a {
@@ -36,10 +40,14 @@ pub fn GalleryImage(props: GalleryImageProps) -> Element {
                 {t.t(props.gallery_entry.description)},
             }
         }
-    )
+    );
+
+    t.finish();
+
+    rtn
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct GalleryEntry {
     pub name: &'static str,
     pub src: &'static str,
@@ -106,6 +114,7 @@ pub fn Gallery(props: CommandProps) -> Element {
 
     let t = props.typewriter_state;
 
+
     let rtn = rsx! {
         div {
             h2 { {t.t("My Gallery")} }
@@ -115,17 +124,20 @@ pub fn Gallery(props: CommandProps) -> Element {
             div {
                 class: "gallery",
                 for gallery_entry in GALLERY.iter() {
-                    GalleryImage {
-                        cmd: props.cmd.clone(),
-                        typewriter_state: t.clone(),
-                        gallery_entry: gallery_entry.clone(),
+                    // {}
+                    {
+                        info!("{:?} \n{:?}", t, t.clone());
+                        rsx! {GalleryImage {
+                            key: gallery_entry.name.clone(),
+                            cmd: props.cmd.clone(),
+                            typewriter_state: t.clone(),
+                            gallery_entry: gallery_entry.clone(),
+                        }}
                     }
                 }
             }
         }
     };
-
-    t.set_on_finished_callback();
 
     rtn
 }

@@ -1,11 +1,13 @@
-use std::time::Duration;
+use std::time::{Duration};
 use async_std::prelude::StreamExt;
 use async_std::task;
+use chrono::Local;
 use dioxus::logger::tracing::info;
 use dioxus::prelude::*;
 use crate::commands::intro::Intro;
-use crate::commands::typewriter::TypewriterState;
+use crate::commands::typewriter::{TypewriterElement, TypewriterState};
 use crate::commands::utils::{get_command, search_commands, CommandNotFound, CommandProps};
+use itertools::Itertools;
 
 #[component]
 fn Prompt() -> Element {
@@ -62,7 +64,7 @@ pub fn PromptInput(props: PromptInputProps) -> Element {
 
 #[component]
 fn IntroCommand() -> Element {
-    let t = TypewriterState::new_with_delay(200);
+    let t = TypewriterState::new_with_delay(200, 1,-1);
 
     let rtn = rsx! {
         span {
@@ -70,7 +72,7 @@ fn IntroCommand() -> Element {
         }
     };
 
-    t.set_on_finished_callback();
+    t.finish();
 
     rtn
 }
@@ -154,13 +156,13 @@ pub fn Home() -> Element {
                 past_cmds_html.with_mut(|past| {
                     past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
                     past.push(
-                        (command.function)(CommandProps::new(prompt_input.peek().clone())))
+                        (command.function)(CommandProps::new(prompt_input.peek().clone(), past_cmds.peek().len() as i32)))
                 });
             } else {
                 past_cmds_html.with_mut(|past| {
                     past.push(rsx! {p { class: "prompt-line", Prompt {} {prompt_input.peek().clone()}}});
                     past.push(rsx! {
-                        CommandNotFound {cmd: prompt_input.peek().clone(), typewriter_state: TypewriterState::new()}
+                        CommandNotFound {cmd: prompt_input.peek().clone(), typewriter_state: TypewriterState::new(past_cmds.peek().len() as i32)}
 
                     });
                 });
@@ -181,14 +183,37 @@ pub fn Home() -> Element {
         current_past_cmd_idx.set(-1);
     };
 
-    let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<u64>| async move {
-        while let Some(delay) = rx.next().await {
-            task::sleep(Duration::from_millis(delay)).await;
+    let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<Vec<TypewriterElement>>| async move {
+        while let Some(typewriter_elements) = rx.next().await {
+            // info!("Received elements {:?}", typewriter_elements);
+
+            for type_ele in typewriter_elements {
+                match type_ele {
+                    TypewriterElement::Text { delay, chunk_size, text, element_id } => {
+                        document::eval(&format!(r#"
+                        window["element"] = document.getElementById("{}");
+                        window["element"].classList.add("cursor-end");"#, element_id));
+
+                        for chunk in text.chars().chunks(chunk_size).into_iter() {
+                            document::eval(&format!(r#"window["element"].textContent += {:?};"#, chunk.collect::<String>()));
+
+                            task::sleep(Duration::from_millis(delay)).await;
+                        }
+                        document::eval(r#"window["element"].classList.remove("cursor-end");"#);
+                    }
+                    TypewriterElement::Image { element_id } => {
+                        document::eval(&format!(r#"
+                        window["element"] = document.getElementById("{}");
+                        window["element"].classList.remove("hidden");"#, element_id));
+                    }
+                }
+
+
+            }
             loading_stage.with_mut(|stage| *stage += 1);
         }
     });
-
-    rsx! {
+            rsx! {
         div {
             id: "App",
             p {
@@ -197,7 +222,7 @@ pub fn Home() -> Element {
                 IntroCommand {}
             }
             if *loading_stage.read() > 0 {
-                Intro { cmd: "intro", typewriter_state: TypewriterState::new()}
+                Intro { cmd: "intro", typewriter_state: TypewriterState::new(0)}
             }
             {past_cmds_html.read().iter()}
 

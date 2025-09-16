@@ -257,6 +257,15 @@ p#input {
     }
 }
 
+.cursor-end::after {
+    content: " ";
+    display: inline-block;
+    width: 0.6rem;
+    height: 1.3rem;
+    background-color: white;
+    position: absolute;
+}
+
 
 .cursor {
     animation-name: cursor-effect;
