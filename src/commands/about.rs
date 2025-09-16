@@ -55,13 +55,13 @@ pub fn About(props: CommandProps) -> Element {
                 a { href: "https://www.linkedin.com/in/max-gordon-533423221/", target: "_blank", rel: "noopener noreferrer", p { {t.image(LINKEDIN_ICON) } {t.t("LinkedIn")} } }
                 a { href: RESUME_PDF, target: "_blank", rel: "noopener noreferrer", p { {t.image(RESUME_ICON) } {t.t("Resume")} } }
                 a { href: "mailto:mgordon291us@gmail.com", target: "_blank", rel: "noopener noreferrer", p { {t.image(EMAIL_ICON) } {t.t("Email")} } }
-
             }
+            {t.end()}
         }
 
     };
 
-    t.finish();
+    // t.finish();
 
     rtn
 }

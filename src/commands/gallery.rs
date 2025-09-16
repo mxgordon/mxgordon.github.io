@@ -42,7 +42,7 @@ pub fn GalleryImage(props: GalleryImageProps) -> Element {
         }
     );
 
-    t.finish();
+    // t.finish();
 
     rtn
 }
@@ -124,19 +124,15 @@ pub fn Gallery(props: CommandProps) -> Element {
             div {
                 class: "gallery",
                 for gallery_entry in GALLERY.iter() {
-                    // {}
-                    {
-                        info!("{:?} \n{:?}", t, t.clone());
-                        rsx! {GalleryImage {
-                            key: gallery_entry.name.clone(),
-                            cmd: props.cmd.clone(),
-                            typewriter_state: t.clone(),
-                            gallery_entry: gallery_entry.clone(),
-                        }}
+                    GalleryImage {
+                        cmd: props.cmd.clone(),
+                        typewriter_state: t.clone(),
+                        gallery_entry: gallery_entry.clone(),
                     }
                 }
             }
         }
+        {t.end()}
     };
 
     rtn

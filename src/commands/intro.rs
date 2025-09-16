@@ -43,9 +43,10 @@ pub fn Intro(props: CommandProps) -> Element {
                 {t.t("!")}
             }
         }
+        {t.end()}
     };
 
-    t.finish();
+    // t.finish();
 
     rtn
 }

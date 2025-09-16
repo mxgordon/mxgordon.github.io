@@ -111,9 +111,10 @@ pub fn CommandNotFound(props: CommandProps) -> Element {
             span { class: "orange", {t.t(suggestion.0)}}
             {t.t("`?")}
         }
+        {t.end()}
     };
 
-    t.finish();
+    // t.finish();
 
     rtn
 }
@@ -125,7 +126,8 @@ pub fn InvalidOption(props: CommandProps) -> Element {
         p {
             {t.t(&props.cmd)}{t.t(": invalid option")}
         }   
+        {t.end()}
     };
-    t.finish();
+    // t.finish();
     rtn
 }
