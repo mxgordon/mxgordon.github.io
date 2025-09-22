@@ -1,7 +1,6 @@
 use std::time::{Duration};
 use async_std::prelude::StreamExt;
 use async_std::task;
-use chrono::Local;
 use dioxus::logger::tracing::info;
 use dioxus::prelude::*;
 use crate::commands::intro::Intro;
@@ -22,6 +21,7 @@ fn Prompt() -> Element {
 pub struct PromptInputProps {
     prompt_input: String,
     on_submit: Callback<Event<FormData>>,
+    on_click: Callback<Event<MouseData>>,
     on_input: Callback<Event<FormData>>,
     on_keydown: Callback<Event<KeyboardData>>,
     auto_complete: Signal<Vec<String>>,
@@ -36,6 +36,7 @@ pub fn PromptInput(props: PromptInputProps) -> Element {
             Prompt {}
             form {
                 onsubmit: props.on_submit,
+                id: "prompt-form",
                 input {
                     r#type: "text",
                     id: "prompt",
@@ -46,6 +47,11 @@ pub fn PromptInput(props: PromptInputProps) -> Element {
                     autocomplete: "off",
                     aria_autocomplete: "none",
                     onmounted: |e| async move {e.set_focus(true).await.expect("TODO: panic message");},
+                }
+                button {
+                    id: "form-buttom",
+                    r#type: "button",
+                    onclick: props.on_click,
                 }
 
                 div {
@@ -66,15 +72,11 @@ pub fn PromptInput(props: PromptInputProps) -> Element {
 fn IntroCommand() -> Element {
     let t = TypewriterState::new_with_delay(200, 1,-1);
 
-    let rtn = rsx! {
+    rsx! {
         span {
             {t.te("intro")}
         }
-    };
-
-    // t.finish();
-
-    rtn
+    }
 }
 
 #[component]
@@ -143,8 +145,7 @@ pub fn Home() -> Element {
         auto_complete.set(search_commands(&new_value).iter().map(|c| c.name.to_string()).collect());
     };
 
-    let handle_submit = move |e: Event<FormData>| {
-        e.prevent_default();
+    let mut submit_cmd = move || {
         let input = prompt_input.peek().clone();
         let mut cmd_splits = input.split_whitespace();
 
@@ -181,6 +182,15 @@ pub fn Home() -> Element {
         prompt_input.set("".to_string());
         auto_complete.set(vec![]);
         current_past_cmd_idx.set(-1);
+    };
+
+    let handle_click = move |e: Event<MouseData>| {
+        submit_cmd.call_mut(());
+    };
+
+    let handle_submit = move |e: Event<FormData>| {
+        e.prevent_default();
+        submit_cmd.call_mut(());
     };
 
     let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<Vec<TypewriterElement>>| async move {
@@ -229,8 +239,9 @@ pub fn Home() -> Element {
 
             if *loading_stage.read() > 1 {
                 PromptInput {
-                    prompt_input: {prompt_input},
+                    prompt_input: prompt_input,
                     on_submit:  handle_submit,
+                    on_click: handle_click,
                     on_input: handle_input,
                     on_keydown: handle_key_down,
                     auto_complete: auto_complete,

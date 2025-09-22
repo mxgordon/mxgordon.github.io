@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use dioxus::logger::tracing::{info, Instrument};
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -129,6 +130,33 @@ impl TypewriterState {
 
     pub fn image(&self, src: Asset) -> Element {
         self.image_alt(src, "")
+    }
+
+    pub fn command(&self, cmd: &str) -> Element {
+        let cmd_clone = cmd.to_string();
+        let click_handler = move |_| {
+            let cmd_ref = cmd_clone.clone();
+            async move {
+                document::eval(&format!(r#"
+                    let prompt_input = document.getElementById("prompt");
+                    prompt_input.focus();
+                    document.execCommand('selectAll', false);
+                    document.execCommand('insertText', false, {:?});
+
+                    let prompt_form = document.getElementById("form-buttom");
+
+                    prompt_form.click();
+                    return true;"#, cmd_ref)).await.expect("Failed to execute command");
+            }
+        };
+
+        rsx! {
+            span {
+                class: "clickable",
+                onclick: click_handler,
+                {self.ts(&cmd)}
+            }
+        }
     }
 
     pub fn end(&self) -> Element {

@@ -44,7 +44,7 @@ pub fn About(props: CommandProps) -> Element {
             }
             p {
                 {t.t("In my freetime I like to work on my car and shoot film photography (try the `")}
-                span { class: "orange", {t.t("gallery")} }
+                {t.command("gallery")}
                 {t.t("` command). Additionally, I enjoy 3D printing and tinkering with my printer.")}
             }
             p { {t.t("For more information about me, check out these links:")} }

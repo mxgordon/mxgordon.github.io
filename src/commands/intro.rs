@@ -24,7 +24,7 @@ pub fn Intro(props: CommandProps) -> Element {
                 p { {t.t("| |  | | (_| |>  <  | |__| | (_) | | | (_| | (_) | | | |")} }
                 p { {t.t("|_|  |_|\\__,_/_/\\_\\  \\_____|\\___/|_|  \\__,_|\\___/|_| |_|")}}
             }
-            p { {t.t("Instead of navigating with buttons and hyperlinks, on my page you will use terminal commands. Start with `")} span { class: "orange", {t.t("help")} } {t.t("` for the list of commands and syntax!")} }
+            p { {t.t("Instead of navigating with buttons and hyperlinks, on my page you will use terminal commands. Start with `")} {t.command("help")} {t.t("` for the list of commands and syntax!")} }
             p {
                 {t.t("Made using ")}
                 a {

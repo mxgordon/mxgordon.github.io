@@ -58,7 +58,7 @@ pub fn get_projects() -> Vec<Project> {
         },
         Project {
             name: "Personal Website".to_string(),
-            description: "I built this website entirely in Rust and Leptos using web-assembly in order to show off my projects and photography. I picked Rust as it's both fast and growing in popularity!".to_string(),
+            description: "I built this website entirely in Rust and Dioxus using web-assembly in order to show off my projects and photography. I picked Rust as it's both fast and growing in popularity!".to_string(),
             github_link: "https://github.com/mxgordon/mxgordon.github.io".to_string(),
             image_link: "https://mxgordon.com/cdn-cgi/image/format=webp/img/v1731358909/personal-website-cover_t5tefc.png".to_string(),
             project_link: Some("/".to_string()),

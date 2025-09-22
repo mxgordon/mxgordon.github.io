@@ -71,9 +71,10 @@ body {
     color: #de251b
 }
 
-a {
+a, .clickable {
     text-decoration: none;
     color: $orange;
+    cursor: pointer;
 
     &:hover {
         text-decoration: underline;
@@ -88,6 +89,10 @@ p {
 form {
     display: inline-flex;
     flex-direction: column;
+
+    button {
+        display: none;
+    }
 }
 
 input {
