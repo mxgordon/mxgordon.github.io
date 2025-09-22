@@ -58,7 +58,7 @@ jobs:
           # token:
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v4
         with:
           # Upload prod dir
           path: './prod'
