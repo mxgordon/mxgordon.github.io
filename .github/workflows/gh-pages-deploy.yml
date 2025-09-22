@@ -1,90 +1,65 @@
-# Workflow name
 name: Release to Github Pages
 
-# Triggers for the workflow
 on:
-  # Run on pushes to the main branch
   push:
     branches: [main]
-  # Allows manual triggering from the Actions tab
   workflow_dispatch:
 
-# Permissions needed for deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Concurrency settings to prevent multiple deployments at once
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # The main job for building and deploying the site
-  github-pages-release:
+  Github-Pages-Release:
 
-    # Set a timeout to prevent jobs from running indefinitely
     timeout-minutes: 10
 
-    # Define the deployment environment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # Use the latest Ubuntu runner
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out the repository's code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Set up the Rust toolchain with the WASM target
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
 
-      # 3. Cache Rust dependencies to speed up future builds
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
 
-      # 4. Install the Dioxus CLI tool
       - name: Setup Dioxus CLI
         run: cargo install dioxus-cli --locked
 
-      # 5. Build and bundle the Dioxus application
-      # The `dx bundle` command will create a self-contained `dist` directory
-      # with all necessary HTML, WASM, and assets.
       - name: Build with Dioxus CLI
         run: |
           dx bundle --release --out-dir dist
-          # This is a common trick for SPAs on GitHub Pages to handle routing.
-          # It makes sure that navigating to a non-root URL still serves your app.
           cp dist/index.html dist/404.html
 
-      # 6. (Optional) Copy CNAME for custom domain
-      # This step will only run if a CNAME file exists in your repository root.
       - name: Copy CNAME for custom domain
         if: CNAME
         run: cp CNAME dist/
 
-      # 7. Configure GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 8. Upload the build artifact
-      # The `dist` directory created by the bundle command is uploaded.
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
 
-      # 9. Deploy the artifact to GitHub Pages
       - name: Deploy to GitHub Pages 🚀
         id: deployment
         uses: actions/deploy-pages@v4
