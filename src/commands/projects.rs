@@ -1,7 +1,6 @@
-use html::Div;
-use leptos::*;
-
-use crate::commands::{typewriter::TypeWriter, utils::{check_cmd_args_empty, get_one_cmd_arg, InvalidOption, InvalidOptionProps}};
+use dioxus::prelude::*;
+use crate::commands::typewriter::TypewriterState;
+use crate::commands::utils::{check_cmd_args_empty, get_one_cmd_arg, CommandProps, InvalidOption, TypewriterEnd};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProjectStatus {
@@ -11,6 +10,7 @@ pub enum ProjectStatus {
 }
 
 #[derive(Debug, Clone)]
+#[derive(PartialEq)]
 pub struct Project {
     pub name: String,
     pub description: String,
@@ -18,6 +18,16 @@ pub struct Project {
     pub image_link: String,
     pub project_link: Option<String>,
     pub status: ProjectStatus
+}
+
+impl Project {
+    pub fn make_status(&self, t: TypewriterState) -> Element {
+        match self.status {
+            ProjectStatus::Complete => rsx! { span {class: "green", {t.t("Complete")}} },
+            ProjectStatus::InProgress => rsx! { span {class: "purple", {t.t("In Progress")}} },
+            ProjectStatus::Dead => rsx! { span {class: "red", {t.t("Dead")}} },
+        }
+    }
 }
 
 pub fn get_projects() -> Vec<Project> {
@@ -48,7 +58,7 @@ pub fn get_projects() -> Vec<Project> {
         },
         Project {
             name: "Personal Website".to_string(),
-            description: "I built this website entirely in Rust and Leptos using web-assembly in order to show off my projects and photography. I picked Rust as it's both fast and growing in popularity!".to_string(),
+            description: "I built this website entirely in Rust and Dioxus using web-assembly in order to show off my projects and photography. I picked Rust as it's both fast and growing in popularity!".to_string(),
             github_link: "https://github.com/mxgordon/mxgordon.github.io".to_string(),
             image_link: "https://mxgordon.com/cdn-cgi/image/format=webp/img/v1731358909/personal-website-cover_t5tefc.png".to_string(),
             project_link: Some("/".to_string()),
@@ -58,67 +68,72 @@ pub fn get_projects() -> Vec<Project> {
 }
 
 #[component]
-pub fn ProjectTile(#[prop()] project: Project) -> impl IntoView {
+pub fn ProjectTile(project: Project, t: TypewriterState) -> Element {
     let project_link2 = project.project_link.clone();
 
     let link = if project_link2.is_some() {project.project_link.clone().unwrap()} else {project.github_link.clone()};
 
-    let status = match project.status {
-        ProjectStatus::Complete => view! {<span class="green">"Complete"</span>},
-        ProjectStatus::InProgress => view! {<span class="purple">"In Progress"</span>},
-        ProjectStatus::Dead => view! {<span class="red">"Dead"</span>},
-    };
+    rsx! {
+        div {
+            class: "project-tile",
+            h3 { {t.t(&project.name)} }
+            p { {t.t("Status: ")} {project.make_status(t.clone())}}
+            p { {t.t(&project.description)} }
+            a {
+                href: link,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                {t.image_alt_loc(&project.image_link, "")}
+            }
+            div {
+                class: "links",
+                a {
+                    href: project.github_link,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    {t.t("GitHub Repository")}
 
-    view! {
-        <div class="project-tile">
-            <h3>{project.name}</h3>
-            <p class="status">"Status: "{status}</p>
-            <p>{project.description}</p>
-            <a href={link} target="_blank" rel="noopener noreferrer">
-                <img src={project.image_link} alt=""/>
-            </a>
-            <div class="links" >
-                <a href={project.github_link} target="_blank" rel="noopener noreferrer" >"GitHub Repository"</a>
-                <Show when={move || project_link2.is_some()} >
-                    <a href={project.project_link.clone().unwrap()} target="_blank" rel="noopener noreferrer">"Project Link"</a>
-                </Show>
-            </div>
-        </div>
+                }
+                if let Some(link) = project_link2 {
+                    a {
+                        href: link,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        {t.t("Project Link")}
+                    }
+                }
+                {t.send()}
+            }
+        }
     }
 }
 
-pub fn projects_html_with_filter(filter: ProjectStatus) -> HtmlElement<Div> {
-    let projects = get_projects();
-
-    projects_html(projects.into_iter().filter(|proj| proj.status == filter).collect())
-}
-
-pub fn projects_html(projects: Vec<Project>) -> HtmlElement<Div> {  // make text change with the different filters
-
-    view! {
-        <div>
-            <h2>"My Projects"</h2>
-            <p>"These are all the projects I have done over the years, please enjoy!"</p>
-            <div class="projects">
-                <For each=move || projects.clone().into_iter() key=|p| p.name.clone() children=move |p| {
-                    view! {<ProjectTile project=p  />}
-                }/>
-            </div>
-        </div>
+pub fn projects_list(projects: Vec<Project>, t: TypewriterState) -> Element {  // make text change with the different filters
+    rsx! {
+        div {
+            h2 { {t.t("My Projects")} }
+            p { {t.ts("These are all the projects I have done over the years, please enjoy!")}}
+            div { class: "projects",
+                for proj in projects {
+                    ProjectTile {project: proj.clone(), t: t.clone()}
+                }
+            }
+            TypewriterEnd {t: t.clone()}
+        }
     }
 }
 
 
 #[component]
-pub fn Projects(#[prop()] cmd: String, #[prop(default=Box::new(|| ()))] on_finished: Box<dyn Fn() + 'static>) -> impl IntoView {
+pub fn Projects(props: CommandProps) -> Element {
     let mut arg = None;
-    
-    if !check_cmd_args_empty(&cmd) {
-        arg = get_one_cmd_arg(&cmd);
+
+    if !check_cmd_args_empty(&props.cmd) {
+        arg = get_one_cmd_arg(&props.cmd);
 
         if arg.is_none() {  // There was more than one argument
-            return view! {
-                <InvalidOption cmd=cmd on_finished=on_finished />
+            return rsx! {
+                InvalidOption {..props}
             }
         }
     }
@@ -128,17 +143,13 @@ pub fn Projects(#[prop()] cmd: String, #[prop(default=Box::new(|| ()))] on_finis
             "complete" => ProjectStatus::Complete,
             "in-progress" => ProjectStatus::InProgress,
             "dead" => ProjectStatus::Dead,
-            _ => return view! {
-                <InvalidOption cmd=cmd on_finished=on_finished />
+            _ => return rsx! {
+                InvalidOption {..props}
             }
         };
 
-        return view! {
-            <TypeWriter html_to_type=projects_html_with_filter(status_arg) callback=on_finished  />
-        };
+        return projects_list(get_projects().into_iter().filter(|proj| proj.status == status_arg).collect(), props.typewriter_state);
     }
-    
-    view! {
-        <TypeWriter html_to_type=projects_html(get_projects()) callback=on_finished  />
-    }
+
+    projects_list(get_projects(), props.typewriter_state)
 }

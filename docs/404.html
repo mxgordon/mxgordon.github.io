@@ -27,9 +27,22 @@
 <!--    <link data-trunk rel="copy-dir" href="/assets/icons/"/>-->
 <!--    <link data-trunk rel="copy-dir" href="/assets/documents/"/>-->
     <!-- TODO preload the folder of icons -->
-  </head>
+  <link rel="preload" as="script" href="/mxgordon.github.io/assets/mxgordon-github-io-5ce3ba3de2824f6d.js" crossorigin><link rel="preload" as="fetch" type="application/wasm" href="/mxgordon.github.io/assets/mxgordon-github-io_bg-577899594fed2d0f.wasm" crossorigin></head>
   <body>
     <div id="main">
     </div>
-  </body>
+  <script>
+            // We can't use a module script here because we need to start the script immediately when streaming
+            import("/mxgordon.github.io/assets/mxgordon-github-io-5ce3ba3de2824f6d.js").then(
+                ({ default: init }) => {
+                init("/mxgordon.github.io/assets/mxgordon-github-io_bg-577899594fed2d0f.wasm").then((wasm) => {
+                    if (wasm.__wbindgen_start == undefined) {
+                    wasm.main();
+                    }
+                });
+                }
+            );
+            </script>
+            
+            </body>
 </html>

@@ -1,0 +1,25 @@
+[application]
+
+[web.app]
+base_path = "mxgordon.github.io"
+
+# HTML title tag content
+title = "mxgordon-github-io"
+
+# include `assets` in web platform
+[web.resource]
+
+# Additional CSS style files
+style = []
+
+# Additional JavaScript files
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []
+
+[web.watcher]
+index_on_404 = true

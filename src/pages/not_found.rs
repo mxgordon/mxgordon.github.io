@@ -1,7 +1,12 @@
-use leptos::*;
+use dioxus::prelude::*;
 
-/// 404 Not Found Page
 #[component]
-pub fn NotFound() -> impl IntoView {
-    view! { <h1>"Uh oh!" <br/> "We couldn't find that page!"</h1>  }
+pub fn NotFound(route: Vec<String>) -> Element {
+    rsx! {  // TODO make this look a bit better
+        h1 {
+            "Uh oh!"
+            br {}
+            "We couldn't find that page!"
+        }
+    }
 }

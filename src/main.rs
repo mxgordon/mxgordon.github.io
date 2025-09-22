@@ -1,19 +1,40 @@
-use leptos::*;
-use mxgordon::App;
-use log;
+#![feature(fn_traits)]
 
-// #[wasm_bindgen(start)]
-fn main() {
-    // set up logging
-    // _ = console_log::init_with_level(log::Level::Debug);
-    console_log::init_with_level(log::Level::Debug).expect("error initializing log");
-    console_error_panic_hook::set_once();
+mod pages;
+mod commands;
 
-    tracing_wasm::set_as_global_default();
+use dioxus::prelude::*;
+use pages::not_found::NotFound;
+use pages::img_viewer::ImgViewer;
+use crate::pages::home::Home;
 
-    mount_to_body(|| {
-        view! {
-            <App />
-        }
-    })
+#[derive(Debug, Clone, Routable, PartialEq)]
+#[rustfmt::skip]
+enum Route {
+    #[route("/")]
+    Home {},
+    #[route("/view/:img_name")]
+    ImgViewer {img_name: String},
+    #[route("/:..route")]
+    NotFound {route: Vec<String>},
+    // #[route("/blog/:id")]
+    // Blog { id: i32 },
 }
+
+const FAVICON: Asset = asset!("/assets/favicon.ico");
+const CSS: Asset = asset!("/assets/styles.scss");
+
+fn main() {
+    launch(App);
+}
+
+#[component]
+fn App() -> Element {
+    rsx! {
+        document::Link { rel: "icon", href: FAVICON }
+        document::Link { rel: "stylesheet", href: CSS }
+        document::Title { "Max Gordon" }
+        Router::<Route> {}
+    }
+}
+

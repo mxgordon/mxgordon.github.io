@@ -1,26 +1,19 @@
-use leptos::*;
-use leptos_router::*;
-
-use crate::commands::gallery::{get_gallery, GalleryEntry};
-
-#[derive(Params, PartialEq)]
-struct ImgParams {
-    name: String
-}
+use dioxus::prelude::*;
+use crate::commands::gallery::*;
 
 #[component]
-pub fn ImgViewer() -> impl IntoView {
-    let params = use_params::<ImgParams>();
-    let name = move || params.with(|params| 
-        params.as_ref()
-            .map(|params| params.name.clone())
-            .unwrap_or_default());
+pub fn ImgViewer(img_name: String) -> Element {
+    let img_src = GALLERY.iter()
+        .find(|entry| entry.name == img_name)
+        .map_or("", |entry| entry.src);
 
-    let gallery = get_gallery();
-
-    view! {
-        <div class="img-view">
-            <img src={gallery.iter().find(|entry| entry.name == name()).unwrap_or(&GalleryEntry{src:"", name:"",description:""}).src} alt="placeholder" />
-        </div>
+    rsx! {
+        div {
+            class: "img-view",
+            img {
+                src: {img_src},
+                alt: "description"
+            }
+        }
     }
 }

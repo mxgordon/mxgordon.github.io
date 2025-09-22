@@ -1,7 +1,7 @@
 $orange: #f57e20;
 $yellow: #f6d434;
 
-html, body, #App {
+html, body, #main, #App {
     height: 100%;
     width: 100%;
     margin: 0;
@@ -12,7 +12,7 @@ html, body, #App {
 }
 
 #App {
-    padding: 12px 12px 20% 12px;
+    padding: 12px 12px 80vh 12px;
     min-height: 100%;
     height: fit-content;
 }
@@ -35,6 +35,7 @@ html, body, #App {
     outline: none;
     width: min-content;
 }
+
 //define blinking animation
 @keyframes blink {
     0%, 100% {
@@ -58,7 +59,6 @@ body {
 }
 
 
-
 .green {
     color: rgb(84, 209, 84)
 }
@@ -71,9 +71,10 @@ body {
     color: #de251b
 }
 
-a {
+a, .clickable {
     text-decoration: none;
     color: $orange;
+    cursor: pointer;
 
     &:hover {
         text-decoration: underline;
@@ -82,11 +83,16 @@ a {
 
 p {
     line-height: 1.3rem;
+    position: relative;
 }
 
 form {
     display: inline-flex;
     flex-direction: column;
+
+    button {
+        display: none;
+    }
 }
 
 input {
@@ -156,7 +162,7 @@ h2 {
             display: flex;
             justify-content: space-evenly;
         }
-        
+
         h3 {
             margin: 0 auto 1rem auto;
             width: fit-content;
@@ -171,7 +177,7 @@ h2 {
             transition: 0.3s;
         }
 
-        
+
         &:hover img {
             filter: none;
         }
@@ -181,7 +187,7 @@ h2 {
 
 .img-view {
     display: flex;
-    justify-content: space-around; 
+    justify-content: space-around;
     height: 100%;
 
     img {
@@ -189,7 +195,7 @@ h2 {
         padding: 12px;
     }
 }
-    
+
 
 .autocomplete-options {
     background-color: white;
@@ -203,7 +209,7 @@ h2 {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 p#input {
@@ -222,18 +228,69 @@ p#input {
     }
 }
 
-.typing::after {
-    content: "";
-    display: inline-block;
-    width: 0.5rem;
-    height: 1rem;
-    background-color: white;
-    font-weight: bold; 
-    transform: translateY(2px);
-}
-
 .ascii-art {
     white-space: pre-wrap;
     margin: 0;
     width: max-content;
+
+    * {
+        white-space: pre-wrap;
+        margin: 0;
+        width: max-content;
+    }
+}
+
+.tw-effect {
+    animation-name: type-effect;
+    animation-duration: 0.3ms;
+    animation-fill-mode: forwards;
+    opacity: 0;
+    position: absolute;
+    display: inline;
+}
+
+@keyframes type-effect {
+    from {
+        opacity: 0;
+        position: absolute;
+        display: inline;
+        width: 0;
+    }
+    to {
+        opacity: 1;
+        position: relative;
+        display: inline;
+        width: initial;
+    }
+}
+
+.cursor-end::after {
+    content: " ";
+    display: inline-block;
+    width: 0.6rem;
+    height: 1.3rem;
+    background-color: white;
+    position: absolute;
+}
+
+
+.cursor {
+    animation-name: cursor-effect;
+    animation-fill-mode: backwards;
+    background-color: white;
+    display: inline-block;
+    position: absolute;
+    height: 0;
+    width: 0;
+}
+
+@keyframes cursor-effect {
+    from {
+        width: 0;
+        height: 0;
+    }
+    1%, to {
+        width: 0.6rem;
+        height: 1.3rem;
+    }
 }
