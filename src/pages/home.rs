@@ -68,9 +68,8 @@ fn IntroCommand() -> Element {
 
     let rtn = rsx! {
         span {
-            {t.t("intro")}
+            {t.te("intro")}
         }
-        {t.end()}
     };
 
     // t.finish();
@@ -184,31 +183,33 @@ pub fn Home() -> Element {
         current_past_cmd_idx.set(-1);
     };
 
-    let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<TypewriterElement>| async move {
-        while let Some(typewriter_element) = rx.next().await {
-            // info!("Received elements {:?}", typewriter_elements);
+    let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<Vec<TypewriterElement>>| async move {
+        while let Some(typewriter_elements) = rx.next().await {
+            info!("Received elements {:?}", typewriter_elements);
+            task::sleep(Duration::from_millis(1)).await;
 
-            // for type_ele in typewriter_elements {
-            match typewriter_element {
-                TypewriterElement::Text { delay, chunk_size, text, element_id } => {
-                    document::eval(&format!(r#"
-                    window["element"] = document.getElementById("{}");
-                    window["element"].classList.add("cursor-end");"#, element_id));
+            for type_ele in typewriter_elements {
+                match type_ele {
+                    TypewriterElement::Text { delay, chunk_size, text, element_id } => {
+                        document::eval(&format!(r#"
+                        window["element"] = document.getElementById("{}");
+                        window["element"].classList.add("cursor-end");"#, element_id));
 
-                    for chunk in text.chars().chunks(chunk_size).into_iter() {
-                        document::eval(&format!(r#"window["element"].textContent += {:?};"#, chunk.collect::<String>()));
+                        for chunk in text.chars().chunks(chunk_size).into_iter() {
+                            document::eval(&format!(r#"window["element"].textContent += {:?};"#, chunk.collect::<String>()));
 
-                        task::sleep(Duration::from_millis(delay)).await;
+                            task::sleep(Duration::from_millis(delay)).await;
+                        }
+                        document::eval(r#"window["element"].classList.remove("cursor-end");"#);
                     }
-                    document::eval(r#"window["element"].classList.remove("cursor-end");"#);
-                }
-                TypewriterElement::Image { element_id } => {
-                    document::eval(&format!(r#"
-                    window["element"] = document.getElementById("{}");
-                    window["element"].classList.remove("hidden");"#, element_id));
-                }
-                TypewriterElement::End => {
-                    loading_stage.with_mut(|stage| *stage += 1);
+                    TypewriterElement::Image { element_id } => {
+                        document::eval(&format!(r#"
+                        window["element"] = document.getElementById("{}");
+                        window["element"].classList.remove("hidden");"#, element_id));
+                    }
+                    TypewriterElement::End => {
+                        loading_stage.with_mut(|stage| *stage += 1);
+                    }
                 }
             }
         }

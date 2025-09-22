@@ -1,7 +1,7 @@
 use dioxus::logger::tracing::info;
 use dioxus::prelude::*;
 use crate::commands::typewriter::TypewriterState;
-use crate::commands::utils::{check_cmd_args_empty, CommandProps, InvalidOption};
+use crate::commands::utils::{check_cmd_args_empty, CommandProps, InvalidOption, TypewriterEnd};
 
 #[derive(Clone, Props, PartialEq, Debug)]
 pub struct GalleryImageProps {
@@ -37,7 +37,7 @@ pub fn GalleryImage(props: GalleryImageProps) -> Element {
                 // }
             }
             p {
-                {t.t(props.gallery_entry.description)},
+                {t.ts(props.gallery_entry.description)},
             }
         }
     );
@@ -120,19 +120,21 @@ pub fn Gallery(props: CommandProps) -> Element {
             h2 { {t.t("My Gallery")} }
             p { {t.t("I enjoy shooting film photography in my freetime. I mainly shoot in color, but occasionally I'll shoot in black & white, as its easier to enlarge and such. Most of these photos were shot on my Minolta XG-9.")} }
             p { {t.t("Keep in mind, these are all unedited, straight off the scanner! Additionally, there's a little bit of x-ray damage from airport security.")} }
-            p { {t.t("Here are some of my favorite shots!")} }
+            p { {t.ts("Here are some of my favorite shots!")} }
             div {
                 class: "gallery",
                 for gallery_entry in GALLERY.iter() {
                     GalleryImage {
+                        key: gallery_entry.name.clone(),
                         cmd: props.cmd.clone(),
                         typewriter_state: t.clone(),
                         gallery_entry: gallery_entry.clone(),
+
                     }
                 }
             }
+            TypewriterEnd {t: t.clone()}
         }
-        {t.end()}
     };
 
     rtn

@@ -40,13 +40,10 @@ pub fn Intro(props: CommandProps) -> Element {
                     target: "_blank",
                     {t.t("Dioxus")}
                 }
-                {t.t("!")}
+                {t.te("!")}
             }
         }
-        {t.end()}
     };
-
-    // t.finish();
 
     rtn
 }

@@ -2,7 +2,9 @@ use dioxus::prelude::*;
 use levenshtein::levenshtein;
 use crate::commands::about::About;
 use crate::commands::gallery::{Gallery};
+use crate::commands::help::Help;
 use crate::commands::intro::Intro;
+use crate::commands::projects::Projects;
 use crate::commands::typewriter::TypewriterState;
 
 #[derive(Debug, Copy, Clone)]
@@ -13,7 +15,7 @@ pub struct Command<'a> {
     pub function: fn(CommandProps) -> Element,
 }
 
-pub static COMMANDS: [Command; 3] = [
+pub static COMMANDS: [Command; 5] = [
     Command {
         name: "intro",
         syntax: "intro",
@@ -32,18 +34,18 @@ pub static COMMANDS: [Command; 3] = [
         description: "My personal gallery of film photography! ",
         function: Gallery,
     },
-    // Command {
-    //     name: "projects",
-    //     syntax: "projects [filter]",
-    //     description: "All my public projects, past and present. You can filter by status, options are `complete`, `in-progress`, and `dead`",
-    //     function: |cmd, on_finished| view! { <Projects cmd={cmd} on_finished=on_finished />}
-    // },
-    // Command {
-    //     name: "help",
-    //     syntax: "help [command]",
-    //     description: "Get help on a command.",
-    //     function: |cmd, on_finished,| view! { <Help cmd={cmd} on_finished=on_finished/>},
-    // },
+    Command {
+        name: "projects",
+        syntax: "projects [filter]",
+        description: "All my public projects, past and present. You can filter by status, options are `complete`, `in-progress`, and `dead`",
+        function: Projects,
+    },
+    Command {
+        name: "help",
+        syntax: "help [command]",
+        description: "Get help on a command.",
+        function: Help,
+    },
 
 ];
 
@@ -86,7 +88,6 @@ pub fn check_cmd_args_empty(cmd: &str) -> bool {
 #[derive(Clone, PartialEq, Props)]
 pub struct CommandProps {
     pub cmd: String,
-    // #[props(default=TypewriterState::new())]
     pub typewriter_state: TypewriterState
 }
 
@@ -105,29 +106,27 @@ pub fn CommandNotFound(props: CommandProps) -> Element {
 
     let t = props.typewriter_state;
 
-    let rtn = rsx! {
+    rsx! {
         p {
             {t.t(&cmd_name)}{t.t(": command not found. Did you mean: `")}
             span { class: "orange", {t.t(suggestion.0)}}
-            {t.t("`?")}
+            {t.te("`?")}
         }
-        {t.end()}
-    };
-
-    // t.finish();
-
-    rtn
+    }
 }
 
 #[component]
 pub fn InvalidOption(props: CommandProps) -> Element {
     let t = props.typewriter_state;
-    let rtn = rsx! {
+
+    rsx! {
         p {
-            {t.t(&props.cmd)}{t.t(": invalid option")}
-        }   
-        {t.end()}
-    };
-    // t.finish();
-    rtn
+            {t.t(&props.cmd)}{t.te(": invalid option")}
+        }
+    }
+}
+
+#[component]
+pub fn TypewriterEnd(t: TypewriterState) -> Element {
+    t.end()
 }

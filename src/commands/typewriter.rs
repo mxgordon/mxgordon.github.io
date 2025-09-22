@@ -18,29 +18,23 @@ pub struct TypewriterState {
     delay: u64,
     chunk_size: usize,
     cmd_number: i32,
-    // typewriter_sequence: Rc<RefCell<Vec<TypewriterElement>>>
+    typewriter_sequence: Rc<RefCell<Vec<TypewriterElement>>>
 }
 
 impl TypewriterState {
     pub fn new(cmd_number: i32) -> Self {
-        Self { delay: 1, chunk_size: 3, cmd_number}//, typewriter_sequence: Rc::new(RefCell::new(Vec::new())) }
+        Self { delay: 1, chunk_size: 3, cmd_number, typewriter_sequence: Rc::new(RefCell::new(Vec::new())) }
     }
 
     pub fn new_with_delay(delay: u64, chunk_size: usize, cmd_number: i32) -> Self {
-        Self { delay, chunk_size, cmd_number}//, typewriter_sequence: Rc::new(RefCell::new(Vec::new())) }
+        Self { delay, chunk_size, cmd_number, typewriter_sequence: Rc::new(RefCell::new(Vec::new())) }
     }
-    
-    // pub fn total_delay(&self) -> i32 {
-    //     *self.count.borrow() * self.delay
-    // }
 
     pub fn text(&self, text: &str) -> Element {
-        // let mut tw_seq = self.typewriter_sequence.borrow_mut();
-        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());//, tw_seq.len());
+        let mut tw_seq = self.typewriter_sequence.borrow_mut();
+        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());
 
-        let typewriter_effect_queue = use_coroutine_handle::<TypewriterElement>();
-
-        typewriter_effect_queue.send(TypewriterElement::Text {
+        tw_seq.push(TypewriterElement::Text {
             delay: self.delay,
             chunk_size: self.chunk_size,
             text: text.to_string(),
@@ -55,12 +49,57 @@ impl TypewriterState {
         }
     }
 
-    pub fn image_alt_loc(&self, src: &str, alt: &str) -> Element {
-        // let mut tw_seq = self.typewriter_sequence.borrow_mut();
-        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());//, tw_seq.len());
-        let typewriter_effect_queue = use_coroutine_handle::<TypewriterElement>();
+    pub fn text_send(&self, text: &str) -> Element {
+        let mut tw_seq = self.typewriter_sequence.borrow_mut();
+        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());
 
-        typewriter_effect_queue.send(TypewriterElement::Image {element_id: element_id.clone()});
+        tw_seq.push(TypewriterElement::Text {
+            delay: self.delay,
+            chunk_size: self.chunk_size,
+            text: text.to_string(),
+            element_id: element_id.clone(),
+        });
+
+        drop(tw_seq);
+
+        self.send();
+
+        rsx! {
+            span {
+                id: element_id,
+                ""
+            }
+        }
+    }
+
+    pub fn text_end(&self, text: &str) -> Element {
+        let mut tw_seq = self.typewriter_sequence.borrow_mut();
+        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());
+
+        tw_seq.push(TypewriterElement::Text {
+            delay: self.delay,
+            chunk_size: self.chunk_size,
+            text: text.to_string(),
+            element_id: element_id.clone(),
+        });
+
+        drop(tw_seq);
+
+        let _ = self.end();
+
+        rsx! {
+            span {
+                id: element_id,
+                ""
+            }
+        }
+    }
+
+    pub fn image_alt_loc(&self, src: &str, alt: &str) -> Element {
+        let mut tw_seq = self.typewriter_sequence.borrow_mut();
+        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());
+
+        tw_seq.push(TypewriterElement::Image {element_id: element_id.clone()});
 
         rsx! {
             img {
@@ -73,11 +112,10 @@ impl TypewriterState {
     }
 
     pub fn image_alt(&self, src: Asset, alt: &str) -> Element {
-        // let mut tw_seq = self.typewriter_sequence.borrow_mut();
-        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());//, tw_seq.len());
-        let typewriter_effect_queue = use_coroutine_handle::<TypewriterElement>();
+        let mut tw_seq = self.typewriter_sequence.borrow_mut();
+        let element_id = format!("cmd{}-{}", self.cmd_number, get_uid());
 
-        typewriter_effect_queue.send(TypewriterElement::Image {element_id: element_id.clone()});
+        tw_seq.push(TypewriterElement::Image {element_id: element_id.clone()});
 
         rsx! {
             img {
@@ -93,26 +131,29 @@ impl TypewriterState {
         self.image_alt(src, "")
     }
 
-    // pub fn finish(&self) {
-    //     let typewriter_effect_queue = use_coroutine_handle::<Vec<TypewriterElement>>();
-    //     typewriter_effect_queue.send(self.typewriter_sequence.take());
-    // }
-
     pub fn end(&self) -> Element {
-        let typewriter_effect_queue = use_coroutine_handle::<TypewriterElement>();
+        let mut tw_seq = self.typewriter_sequence.borrow_mut();
+        tw_seq.push(TypewriterElement::End);
+        drop(tw_seq);
 
-        typewriter_effect_queue.send(TypewriterElement::End);
+        self.send();
         
         rsx!()
     }
 
-    // pub fn set_on_finished_callback(&self) {
-    //     let prompt_show_delay = use_coroutine_handle::<u64>();
-    //     info!("Total delay {}ms", self.total_delay());
-    //     prompt_show_delay.send(self.total_delay() as u64);
-    // }
+    pub fn send(&self)  {
+        let typewriter_effect_queue = use_coroutine_handle::<Vec<TypewriterElement>>();
+
+        typewriter_effect_queue.send(self.typewriter_sequence.take());
+    }
 
     pub fn t(&self, text: &str) -> Element {
         self.text(text)
+    }
+    pub fn ts(&self, text: &str) -> Element {
+        self.text_send(text)
+    }
+    pub fn te(&self, text: &str) -> Element {
+        self.text_end(text)
     }
 }

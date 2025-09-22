@@ -12,7 +12,7 @@ html, body, #main, #App {
 }
 
 #App {
-    padding: 12px 12px 20% 12px;
+    padding: 12px 12px 80vh 12px;
     min-height: 100%;
     height: fit-content;
 }
@@ -204,7 +204,7 @@ h2 {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 p#input {
@@ -229,7 +229,9 @@ p#input {
     width: max-content;
 
     * {
-        margin: inherit;
+        white-space: pre-wrap;
+        margin: 0;
+        width: max-content;
     }
 }
 
