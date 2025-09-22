@@ -40,7 +40,9 @@ jobs:
           cache-on-failure: true
 
       - name: Setup Dioxus Cli
-        run: cargo install dioxus-cli
+        run: |
+          cargo install
+          cargo install dioxus-cli
 
       - name: Build with Dioxus CLI
         run: |
