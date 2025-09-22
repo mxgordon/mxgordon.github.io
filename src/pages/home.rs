@@ -109,10 +109,10 @@ pub fn Home() -> Element {
                 e.prevent_default();
                 let next_idx = *current_past_cmd_idx.peek() + 1;
 
-                info!("{:?} {}", next_idx, current_past_cmd_idx.peek());
+                // info!("{:?} {}", next_idx, current_past_cmd_idx.peek());
 
                 if next_idx < past_cmds.len() as i32 {
-                    info!("{:?} {} {}", next_idx, current_past_cmd_idx.peek(), past_cmds.len());
+                    // info!("{:?} {} {}", next_idx, current_past_cmd_idx.peek(), past_cmds.len());
                     current_past_cmd_idx.set(next_idx);
                     prompt_input.set(past_cmds.get(next_idx as usize).expect("Index out of bounds").to_string());
                 }
@@ -195,7 +195,7 @@ pub fn Home() -> Element {
 
     let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<Vec<TypewriterElement>>| async move {
         while let Some(typewriter_elements) = rx.next().await {
-            info!("Received elements {:?}", typewriter_elements);
+            // info!("Received elements {:?}", typewriter_elements);
             task::sleep(Duration::from_millis(1)).await;
 
             for type_ele in typewriter_elements {

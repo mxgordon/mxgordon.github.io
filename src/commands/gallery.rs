@@ -21,7 +21,7 @@ pub fn GalleryImage(props: GalleryImageProps) -> Element {
 
     let src = format!("https://mxgordon.com/cdn-cgi/image/format=webp,height=768/img/{}", last_two.join("/"));
 
-    info!("{:?}",t);
+    // info!("{:?}",t);
 
     let rtn = rsx!(
         div {
