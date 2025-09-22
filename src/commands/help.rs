@@ -32,7 +32,7 @@ pub fn Help(props: CommandProps) -> Element {
     match cmd_split.len() {
         1 => rsx! {
             p {
-                p {{t.t("MAX bash, version 0.0.1")}}
+                p {{t.t("MAX bash, version 0.1.2")}}
                 p {{t.t("These are all the commands supported on this platform. To learn more about a command use `help [command]`.")}}
                 for cmd in COMMANDS.iter() {
                     p {{t.t("- ")} {t.command(cmd.name)}}
