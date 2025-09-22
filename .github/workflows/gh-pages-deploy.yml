@@ -1,23 +1,32 @@
+name: Release to Github Pages
+
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - "main"
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  Github-Pages-Release:
+
+    timeout-minutes: 10
+
     environment:
       name: github-pages
-      url: ${{ steps.build-publish.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4 # repo checkout
 
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1.0.6
@@ -33,22 +42,53 @@ jobs:
       - name: Setup Dioxus Cli
         run: cargo install dioxus-cli
 
-      - name: Setup TailwindCSS Cli
-        run: npm -g install tailwindcss
+      - name: Build with Dioxus CLI
+        run: |
+          dx bundle --out-dir prod
+          mv prod/public/* prod
+          cp prod/index.html prod/404.html
 
-        #  - name: Run TailwindCSS Compiler
-        #    run: npx tailwind -c tailwind.config.js -o src/index.css --minify
+      - name: "Copy CNAME into /prod"
+        run: cp CNAME prod/
 
-      - name: Run Dioxus
-        run: dioxus build --release
-
-      - name: Upload
-        uses: actions/upload-pages-artifact@v1.0.4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
         with:
-          path: dist
+          enablement: true
+          # token:
 
-      - id: deploy
-        name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          token: ${{ github.token }}
+          # Upload prod dir
+          path: './prod'
+
+      - name: Deploy to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@v3
+
+
+
+
+#  deploy:
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#
+#      - name: Setup TailwindCSS Cli
+#        run: npm -g install tailwindcss
+#
+#        #  - name: Run TailwindCSS Compiler
+#        #    run: npx tailwind -c tailwind.config.js -o src/index.css --minify
+#
+#
+#      - name: Upload
+#        uses: actions/upload-pages-artifact@v1.0.4
+#        with:
+#          path: dist
+#
+#      - id: deploy
+#        name: Deploy to GitHub Pages
+#        uses: actions/deploy-pages@v1
+#        with:
+#          token: ${{ github.token }}
