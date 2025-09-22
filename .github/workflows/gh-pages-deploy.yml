@@ -49,7 +49,6 @@ jobs:
           cp dist/index.html dist/404.html
 
       - name: Copy CNAME for custom domain
-        if: CNAME
         run: cp CNAME dist/
 
       - name: Setup Pages
