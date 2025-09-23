@@ -46,6 +46,7 @@ jobs:
       - name: Build with Dioxus CLI
         run: |
           dx bundle --release --out-dir dist
+          mv dist/public/* dist
           cp dist/index.html dist/404.html
 
       - name: Copy CNAME for custom domain
