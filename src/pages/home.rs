@@ -185,12 +185,12 @@ pub fn Home() -> Element {
     };
 
     let handle_click = move |e: Event<MouseData>| {
-        submit_cmd.call_mut(());
+        submit_cmd();
     };
 
     let handle_submit = move |e: Event<FormData>| {
         e.prevent_default();
-        submit_cmd.call_mut(());
+        submit_cmd();
     };
 
     let _prompt_show_delay = use_coroutine(move |mut rx: UnboundedReceiver<Vec<TypewriterElement>>| async move {

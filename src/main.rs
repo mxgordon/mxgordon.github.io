@@ -1,4 +1,4 @@
-#![feature(fn_traits)]
+// #![feature(fn_traits)]
 
 mod pages;
 mod commands;
