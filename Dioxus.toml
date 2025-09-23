@@ -5,6 +5,7 @@ base_path = "mxgordon.github.io"
 
 # HTML title tag content
 title = "mxgordon-github-io"
+public_url = "https://mxgordon.com/"
 
 # include `assets` in web platform
 [web.resource]
