@@ -125,7 +125,7 @@ pub fn Gallery(props: CommandProps) -> Element {
                 class: "gallery",
                 for gallery_entry in GALLERY.iter() {
                     GalleryImage {
-                        key: gallery_entry.name.clone(),
+                        key: "{gallery_entry.name}",
                         cmd: props.cmd.clone(),
                         typewriter_state: t.clone(),
                         gallery_entry: gallery_entry.clone(),

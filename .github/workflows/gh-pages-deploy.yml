@@ -48,6 +48,9 @@ jobs:
           dx bundle --release
           cp target/dx/mxgordon-github-io/release/web/public/index.html target/dx/mxgordon-github-io/release/web/public/404.html
 
+      - name: Copy assets to build output
+        run: cp -r assets target/dx/mxgordon-github-io/release/web/public/
+
       - name: Copy CNAME for custom domain
         run: cp CNAME target/dx/mxgordon-github-io/release/web/public/
 

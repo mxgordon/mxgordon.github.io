@@ -7,6 +7,8 @@ public_url = "https://mxgordon.com/"
 
 # include `assets` in web platform
 [web.resource]
+# Copy the assets directory to the public folder
+asset_dir = "assets"
 
 # Additional CSS style files
 style = []
