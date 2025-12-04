@@ -45,12 +45,11 @@ jobs:
 
       - name: Build with Dioxus CLI
         run: |
-          dx bundle --release --out-dir dist
-          mv dist/public/* dist
-          cp dist/index.html dist/404.html
+          dx bundle --release
+          cp target/dx/mxgordon-github-io/release/web/public/index.html target/dx/mxgordon-github-io/release/web/public/404.html
 
       - name: Copy CNAME for custom domain
-        run: cp CNAME dist/
+        run: cp CNAME target/dx/mxgordon-github-io/release/web/public/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -58,7 +57,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: './target/dx/mxgordon-github-io/release/web/public'
 
       - name: Deploy to GitHub Pages 🚀
         id: deployment
